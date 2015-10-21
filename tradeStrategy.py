@@ -2661,6 +2661,43 @@ def market_test():
     #market.get_p_cross_N(3, 'realtime')
     static_result_df=market.today_static()
 
+def score_market():
+    today_df,this_time_str=get_today_df()
+    gt5_df=today_df[today_df['changepercent']>2.0]
+    #print today_df
+    ma_type='ma5'
+    ma_offset=0.01
+    great_score=4
+    great_change=5.0
+    all_codes=gt5_df.index.values.tolist()
+    data={}
+    stronge_ma_3_list=[]
+    result_column=['code','l_s_date','l_s_state','t_s_date','t_s_state','t_date','t_state','score','oper3']
+    result_df=pd.DataFrame(data,columns=result_column)
+    if all_codes:
+        for code_str in all_codes:
+            stock=Stockhistory(code_str,'D')
+            code_data=stock.get_trade_df(ma_type,ma_offset,great_score,great_change)
+            if code_data:
+                code_df=pd.DataFrame(code_data,index=['code'],columns=result_column)
+                result_df=result_df.append(code_df,ignore_index=True)
+                if code_data['oper3'] ==3:
+                    stronge_ma_3_list.append(code_str)
+    
+    result_df.to_csv('./result/score_%s.csv' % this_time_str[:10])
+    if stronge_ma_3_list:
+        print 'stronge_ma5_list=',stronge_ma_3_list
+        stronge_ma5_df=today_df[today_df.index.isin(stronge_ma_3_list)]
+        print stronge_ma5_df
+    print 'result_df:'
+    result_df=result_df.sort_index(axis=0, by='oper3', ascending=False)
+    print result_df
+    
+    result_df_score_gt0=result_df[result_df['score']>=0]
+    print result_df_score_gt0
+    result_df_oper3_gt1=result_df[result_df['oper3']>=1]
+    print result_df_oper3_gt1
+
 #test2()     
 #stock_test1()
 #stock_realtime_monitor()
