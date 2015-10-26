@@ -156,15 +156,15 @@ def f_code_2sybol(code_f):
 def get_latest_trade_day(this_date=None):
     except_trade_day_list=['2015-05-01','2015-06-22','2015-09-03','2015-10-01','2015-10-02','2015-10-06','2015-10-07','2015-10-08']
     this_day=datetime.datetime.now()
-    if this_day.hour>=0 and this_day.hour<=9:
-        this_day=this_day+datetime.timedelta(days=-1)
+    #if this_day.hour>=0 and this_day.hour<=9:
+    #    this_day=this_day+datetime.timedelta(days=-1)
     if this_date!=None:
             this_day=this_date
     open_str=' 09:31:00'
     this_str=this_day.strftime('%Y-%m-%d %X')
-    if this_str<this_str[:10]+open_str:
-        last_day=datetime.datetime.strptime(this_str,'%Y-%m-%d %X')+datetime.timedelta(days=-1)
-        this_str=last_day.strftime('%Y-%m-%d')  
+    if this_str<this_str[:10]+open_str and (this_day.hour>=0 and this_day.hour<=9):
+        this_day=datetime.datetime.strptime(this_str,'%Y-%m-%d %X')+datetime.timedelta(days=-1)
+        this_str=this_day.strftime('%Y-%m-%d')  
     latest_day_str=''
     this_str=this_str[:10]
     while this_str>='2010-01-01':
@@ -175,6 +175,17 @@ def get_latest_trade_day(this_date=None):
             this_day=this_day+datetime.timedelta(days=-1)
             this_str=this_day.strftime('%Y-%m-%d')  
     return latest_day_str
+
+#to get the latest trade day
+def get_last_trade_day():
+    latest_day_str=get_latest_trade_day()
+    print 'latest_day_str=',latest_day_str
+    latest_datetime_str=latest_day_str+' 10:00:00'
+    latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y-%m-%d %X')
+    last_datetime=latest_datetime+datetime.timedelta(days=-1)
+    last_date_str=get_latest_trade_day(last_datetime)
+    print 'last_date_str=',last_date_str
+    return last_date_str
 
 def is_trade_time(latest_trade_date):
     this_time=datetime.datetime.now()
@@ -1104,26 +1115,35 @@ class Stockhistory:
         temp_df['subtr_%s'%long_num]=temp_df['max_%s'%long_num]-temp_df['min_%s'%long_num]
         temp_df['break_up_%s'%long_num]=np.where(temp_df['low']<temp_df['min_%s'%long_num].shift(1),-1,temp_df['break_up_%s'%long_num])
         temp_df['break_sum_%s'%short_num]=np.round(pd.rolling_sum(temp_df['break_up_%s'%short_num], window=2), 2)
+        temp_df['break_sum_%s'%long_num]=np.round(pd.rolling_sum(temp_df['break_up_%s'%long_num], window=2), 2)
         #print temp_df
         crit1=temp_df['break_up_%s'%short_num]==1 
         crit2=temp_df['break_sum_%s'%short_num]==1
         #temp_df=temp_df.fillna(0)
         temp_df=temp_df.fillna(method='bfill')
-        print temp_df
+        #print temp_df
         #temp_df['1st_break'%short_num]=np.where(temp_df['break_sum_%s'%short_num]>temp_df['break_up_%s'%short_num],1,0)
         #temp_df['1st_break'%short_num]=np.where(temp_df['break_sum_%s'%short_num]>1,1,0)
         #crit1=temp_df.break_sum_20==1
         #crit2=temp_df.break_up_20==1
-        df=temp_df[crit1&crit2]#[temp_df['break_sum_%s'%short_num]==1 and temp_df['break_up_%s'%short_num]==1]
+        df_20=temp_df[crit1&crit2]#[temp_df['break_sum_%s'%short_num]==1 and temp_df['break_up_%s'%short_num]==1]
         #print 'df='
         #print len(df)
-        print df['date'].values.tolist()
+        #print df_20['date'].values.tolist()
+        
+        crit1=temp_df['break_up_%s'%long_num]==1 
+        crit2=temp_df['break_sum_%s'%long_num]==1
+        df_55=temp_df[crit1&crit2]
+        latest_break_20=''
+        latest_break_55=''
+        if df_20['date'].values.tolist(): latest_break_20=df_20['date'].values.tolist()[-1]
+        if df_55['date'].values.tolist():latest_break_55=df_55['date'].values.tolist()[-1]
         temp_df.to_csv('./result_temp/atr_%s.csv' % self.code)
         #print temp_df
-        print temp_df['atr_rate'].value_counts()
+        #print temp_df['atr_rate'].value_counts()
         atr_s= (temp_df['atr_rate'].value_counts()/temp_df['atr_rate'].count()).round(2)
-        print 'atr_static:'
-        print atr_s
+        #print 'atr_static:'
+        #print atr_s
         value_list=atr_s.values.tolist()
         wave_rate_list=atr_s.index.tolist()
         sum_point=0.00
@@ -1132,11 +1152,11 @@ class Stockhistory:
             sum_point+=value_list[i]*wave_rate_list[i]
             value_list_sum+=value_list[i]
         weight_average_atr=round(sum_point/value_list_sum,2)
-        print 'weight_average_atr=%s%%' % weight_average_atr
+        #print 'weight_average_atr=%s%%' % weight_average_atr
         top5_average=sum(atr_s.index.tolist()[:5])/5.00
-        print 'top5_average=%s%%' % top5_average
+        #print 'top5_average=%s%%' % top5_average
       
-        return temp_df
+        return temp_df,latest_break_20,latest_break_55,top5_average
     
     def get_macd_df(self,short_num, long_num,dif_num,current_price):
         temp_df=self.h_df
@@ -2697,7 +2717,62 @@ def score_market():
     print result_df_score_gt0
     result_df_oper3_gt1=result_df[result_df['oper3']>=1]
     print result_df_oper3_gt1
+    
+def atr_market():
+    today_df,this_time_str=get_today_df()
+    file_name='./data/all2015-10-26.csv'
+    today_df=read_today_df(file_name)
+    print today_df
+    gt2_df=today_df[today_df['changepercent']>2.0]
+    #print today_df
+    short_num=20
+    long_num=55
+    all_codes=gt2_df.index.values.tolist()
+    latest_break_20_list=[]
+    latest_break_55_list=[]
+    top5_average_sum=0.0
+    latest_day_str=get_latest_trade_day()
+    print 'latest_day_str=',latest_day_str
+    if all_codes and latest_day_str:
+        for code_str in all_codes:
+            stock=Stockhistory(code_str,'D')
+            #print 'code_str=',code_str
+            temp_df,latest_break_20,latest_break_55,top5_average=stock.get_atr_df(short_num, long_num)
+            if latest_day_str==latest_break_20:
+                latest_break_20_list.append(code_str)
+            
+            if latest_day_str==latest_break_55:
+                latest_break_55_list.append(code_str)
+            
+            top5_average_sum+=top5_average
+        top5_average_all_market=round(top5_average_sum/len(all_codes))
+    print 'latest_break_20_list=',latest_break_20_list
+    print 'latest_break_55_list=',latest_break_55_list
+    print 'top5_average_all_market=',top5_average_all_market
+    latest_break_20_df=today_df[today_df.index.isin(latest_break_20_list)]
+    latest_break_55_df=today_df[today_df.index.isin(latest_break_55_list)]
+    latest_break_20_df.to_csv('./result_temp/atr_break_20_%s.csv' % latest_day_str)
+    latest_break_55_df.to_csv('./result_temp/atr_break_55_%s.csv' % latest_day_str)
+    print 'latest_break_20_df:'
+    print latest_break_20_df
+    print 'latest_break_55_df:'
+    print latest_break_55_df
+    return latest_break_20_list,latest_break_55_list,top5_average_all_market
 
+def back_test_atr():
+    last_day_str=get_last_trade_day()
+    today_df,this_time_str=get_today_df()
+    last_break_20_df=pd.read_csv('./result_temp/atr_break_20_%s.csv' % last_day_str)
+    last_break_55_df=pd.read_csv('./result_temp/atr_break_55_%s.csv' % last_day_str)
+    last_break_20_code_list=last_break_20_df.index.values.tolist()
+    last_break_55_code_list=last_break_55_df.index.values.tolist()
+    latest_break_20_df=today_df[today_df.index.isin(last_break_20_code_list)]
+    latest_break_20_df_mean=latest_break_20_df['changepercent'].mean()
+    latest_break_20_df_high_mean=latest_break_20_df['h_chang'].mean()
+    latest_break_55_df=today_df[today_df.index.isin(last_break_55_code_list)]
+    latest_break_55_df_mean=latest_break_55_df['changepercent'].mean()
+    latest_break_55_df_high_mean=latest_break_55_df['h_chang'].mean()
+    
 #test2()     
 #stock_test1()
 #stock_realtime_monitor()
