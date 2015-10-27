@@ -69,7 +69,7 @@ print result_df_score_gt0
 result_df_oper3_gt1=result_df[result_df['oper3']>=1]
 print result_df_oper3_gt1
 
-result_df.to_csv('./result/score_ma10.csv')
+result_df.to_csv(ROOT_DIR+'/result/score_ma10.csv')
 end_time = datetime.datetime.now()
 delta_second=get_delta_seconds(start_time, end_time)/len(all_codes)
 

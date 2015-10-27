@@ -24,15 +24,15 @@ ISODATEFORMAT='%Y-%m-%d'
 
 ROOT_DIR='E:/work/stockAnalyze'
 
-RAW_HIST_DIR='./export/'
-HIST_DIR='./hist/'
+RAW_HIST_DIR=ROOT_DIR+'/export/'
+HIST_DIR=ROOT_DIR+'/hist/'
 HIST_FILE_TYPE='.csv'
 
 
 #get the all file source data in certain DIR
 def get_all_code(hist_dir):
     all_code=[]
-    for filename in os.listdir(hist_dir):#(r'./export'):
+    for filename in os.listdir(hist_dir):#(r'ROOT_DIR+/export'):
         code=filename[:-4]
         if len(code)==6:
             all_code.append(code)
@@ -41,9 +41,8 @@ def get_all_code(hist_dir):
 #get the history raw data for certain code: ['date','open','high','low','close','volume','rmb']
 """data from 'export' is update from trade software everyday """
 def get_raw_hist_df(code_str,latest_count=None):
-    raw_hist_dir='./export/'
     file_type='csv'
-    file_name=raw_hist_dir+code_str+'.'+file_type
+    file_name=RAW_HIST_DIR+code_str+'.'+file_type
     column_list=['date','open','high','low','close','volume','rmb']
     df_0=pd.read_csv(file_name,names=column_list, header=0)
     #print df_0
@@ -59,12 +58,12 @@ def get_raw_hist_df(code_str,latest_count=None):
     this_time_str=this_time.strftime('%Y-%m-%d %X')
     df.index.name=this_time_str
     """check"""
-    hist_dir='./hist/'
+    hist_dir=ROOT_DIR+'/hist/'
     file_type='csv'
     file_name=hist_dir+code_str+'.'+file_type
     #print df
     df.to_csv(file_name)
-    hist_dir='./update/'
+    hist_dir=ROOT_DIR+'/update/'
     file_name=hist_dir+code_str+'.'+file_type
     df.to_csv(file_name)
     #column_list=['date','open','high','low','close','volume']
@@ -83,7 +82,7 @@ def write_hist_index():
     """
     #print datetime.datetime.now()
     index_list=['sh','sz','zxb','cyb','hs300','sz50']
-    index_dir='./index/'
+    index_dir=ROOT_DIR+'/index/'
     file_type='csv'
     for index_str in index_list:
         print 'Getting hist data for %s index ...' % index_str
@@ -94,7 +93,7 @@ def write_hist_index():
     
     #print datetime.datetime.now()
 def get_hist_index(index_str):
-    index_dir='./index/'
+    index_dir=ROOT_DIR+'/index/'
     file_type='csv'
     index_list=['sh','sz','zxb','cyb','hs300','sz50']
     file_name=index_dir+index_str+'.'+file_type
@@ -117,10 +116,10 @@ def get_file_timestamp(file_name):
 def get_hist_df(code_str,analyze_type,latest_count=None):
     target_dir=''
     if analyze_type=='history':
-        target_dir='./hist/'
+        target_dir=ROOT_DIR+'/hist/'
     else:
         if analyze_type=='realtime':
-            target_dir='./update/'
+            target_dir=ROOT_DIR+'/update/'
         else:
             pass
     file_type='csv'
@@ -272,7 +271,7 @@ def get_today_df():
     pre_name='all'
     #if profix_name != None:
     #    pre_name=profix_name
-    file_name='./data/%s.csv'%(pre_name+latest_trade_day_str)
+    file_name=ROOT_DIR+'/data/%s.csv'%(pre_name+latest_trade_day_str)
     file_time_str=get_file_timestamp(file_name)
     
     data={}
@@ -314,7 +313,7 @@ def write_today_df(file_name,today_df):
     #del today_df['name']
     #today_df1=today_df.set_index('code')
     #pre_name='all'
-    #file_name='./data/%s.csv'%(pre_name+latest_trade_day_str)
+    #file_name=ROOT_DIR+'/data/%s.csv'%(pre_name+latest_trade_day_str)
     this_time=datetime.datetime.now()
     this_time_str=this_time.strftime('%Y-%m-%d %X')
     today_df.index.name=this_time_str
@@ -401,9 +400,9 @@ def update_one_hist(code_sybol,today_df,today_df_update_time):
         #print hist_df.index.name
         #print hist_df
         #print 'update_one_hist:',hist_df_updated
-        update_file_name='./update/%s.csv'% code_sybol
+        update_file_name=ROOT_DIR+'/update/%s.csv'% code_sybol
         hist_df.to_csv(update_file_name)
-        hist_file_name='./hist/%s.csv'% code_sybol
+        hist_file_name=ROOT_DIR+'/hist/%s.csv'% code_sybol
         if is_trade_time(get_latest_trade_day()):
             pass
         else:
@@ -412,7 +411,7 @@ def update_one_hist(code_sybol,today_df,today_df_update_time):
     
 def update_all_hist(today_df,today_df_update_time):
     print 'Star update history stock data...'
-    hist_all_code=get_all_code('./hist')
+    hist_all_code=get_all_code(ROOT_DIR+'/hist')
     #print 'update_all_hist:',hist_all_code
     all_codes=today_df.index.values.tolist()
     #for code_sybol in hist_all_code:
@@ -426,8 +425,8 @@ def update_all_hist(today_df,today_df_update_time):
         if code_sybol in hist_all_code:
             updated_df=update_one_hist(code_sybol, today_df,today_df_update_time)
             """
-            file_name='./update/%s.csv'% code_sybol
-            hist_file_name='./hist/%s.csv'% code_sybol
+            file_name=ROOT_DIR+'/update/%s.csv'% code_sybol
+            hist_file_name=ROOT_DIR+'/hist/%s.csv'% code_sybol
             #updated_df.to_csv(file_name) #,encoding='GB18030')
             if is_trade_time(latest_trade_date):
                 pass
@@ -463,7 +462,7 @@ def init_all_hist_from_export():
     #update_all_hist(get_today_df())
     
 def get_top_list():
-    update_file_name='./result/top_2015-07-08.csv'
+    update_file_name=ROOT_DIR+'/result/top_2015-07-08.csv'
     df=ts.top_list('2015-07-08')
     df.to_csv(update_file_name,encoding='GB18030')
     return
@@ -590,7 +589,7 @@ def market_analyze_today():
     #init_all_hist_from_export()
     latest_trade_day=get_latest_trade_day()
     today_df,df_time_stamp=get_today_df()
-    out_file_name='./result/result-' + latest_trade_day + '.txt'
+    out_file_name=ROOT_DIR+'/result/result-' + latest_trade_day + '.txt'
     output=open(out_file_name,'w')
     sys.stdout=output
     market=Market(today_df)
@@ -611,7 +610,7 @@ def market_analyze_today():
     t_df=market.today_df
     df_10=t_df[t_df.index.isin(code_10)]
     #print df_10
-    filename='./data/is10-%s.csv' % latest_trade_day
+    filename=ROOT_DIR+'/data/is10-%s.csv' % latest_trade_day
     df_10.to_csv(filename)
     #code_10= ['002579', '002243', '002117', '000970', '600654', '000533', '600377', '300080', '600382', '600423', '600208', '601188', '002338', '002237', '002234', '000666', '600858', '601678', '300104', '002487', '600581', '600580', '002242', '600616', '600618', '002412', '002148', '600320', '000409', '600978', '600405', '600819', '600816', '002201', '002207', '002562', '000637', '601390', '000593', '600094', '600146', '600668', '000785', '601718', '300018', '002585', '600449', '600565', '600219', '300342', '600282', '002323', '002328', '300347', '600825', '000673', '601100', '300115', '002551', '002490', '002495', '002392', '600741', '600621', '002597', '002073', '000004', '600133', '601339', '000419', '000555', '600570', '603100', '600419', '000955', '000952', '000789', '300155', '002213', '601999', '600707', '600680', '600686', '600159', '601002', '002668', '002503', '600052', '002006', '002501', '600513', '600222', '600225', '300349', '600350', '300291', '600358', '600292', '000888', '601116', '300122', '300125', '601800', '002387', '002386', '002389', '002263', '601231', '600633', '601600', '002042', '600495', '002169', '600499', '600643', '600640', '600308', '000548', '300317', '300314', '300091', '600396', '000726', '000729', '002227', '603166', '603167', '600393', '600636', '002121', '002125', '600695', '002087', '603008', '600169', '000509', '000501', '601519', '601518', '002409', '600360', '000698', '600506', '600332', '600330', '002103', '002651', '300286', '002083', '603001', '000897', '600802']
     #print 'potential_101_list=',potential_101_list
@@ -853,7 +852,7 @@ class Stockhistory:
         #result_list=[self.code,last_stratege_date,this_stratege_state*(-1),this_stratege_date,this_stratege_state,this_date,this_state,this_score,recent_sum]
         #print result_list
         #"""
-        temp_df.to_csv('./trade_temp/%s.csv'%self.code)
+        temp_df.to_csv(ROOT_DIR+'/trade_temp/%s.csv'%self.code)
         return result_data
     
     def get_trade_df0(self,ma_type='ma5',ma_offset=0.01,great_score=4,great_change=5.0):
@@ -904,7 +903,7 @@ class Stockhistory:
         result_list=[self.code,last_stratege_date,this_stratege_state*(-1),this_stratege_date,this_stratege_state,this_date,this_state,recent_sum]
         #print result_list
         #"""
-        temp_df.to_csv('./trade_temp/%s.csv'%self.code)
+        temp_df.to_csv(ROOT_DIR+'/trade_temp/%s.csv'%self.code)
         return recent_sum
     
     def ma_analyze(self):
@@ -1139,7 +1138,7 @@ class Stockhistory:
         latest_break_55=''
         if df_20['date'].values.tolist(): latest_break_20=df_20['date'].values.tolist()[-1]
         if df_55['date'].values.tolist():latest_break_55=df_55['date'].values.tolist()[-1]
-        temp_df.to_csv('./result_temp/atr_%s.csv' % self.code)
+        temp_df.to_csv(ROOT_DIR+'/result_temp/atr_%s.csv' % self.code)
         #print temp_df
         #print temp_df['atr_rate'].value_counts()
         atr_s= (temp_df['atr_rate'].value_counts()/temp_df['atr_rate'].count()).round(2)
@@ -1198,7 +1197,7 @@ class Stockhistory:
         temp_df['bar']=idx_df['idx']-idx_df['idx']
         temp_df['bar']=np.where(temp_df['idx']<1,temp_df['bar'],(temp_df['dif']-temp_df['dea'])*2)
         print temp_df
-        temp_df.to_csv('./result/macd%s.csv'%self.code)
+        temp_df.to_csv(ROOT_DIR+'/result/macd%s.csv'%self.code)
         return temp_df
     
     def get_reatime_macd(self,short_num, long_num,dif_num,current_price):
@@ -2014,7 +2013,7 @@ class Market:
         #print self.all_codes
     def get_p_cross_N(self,cross_num,analyze_type):
         potential_cross_n_list=[]
-        hist_all_code=get_all_code('./hist')
+        hist_all_code=get_all_code(ROOT_DIR+'/hist')
         if self.all_codes:
             #print self.all_codes
             for code in self.all_codes:
@@ -2039,7 +2038,7 @@ class Market:
         potential_cross_n_list=[]
         actual_cross_n_list=[]
         success_rate=0
-        hist_all_code=get_all_code('./hist')
+        hist_all_code=get_all_code(ROOT_DIR+'/hist')
         if self.all_codes:
             #print self.all_codes
             for code in self.all_codes:
@@ -2083,9 +2082,9 @@ class Market:
         #if today.isoweekday()<6:
         today_str=today.strftime(ISODATEFORMAT)
         star_df.index.name=today_str
-        #df.to_csv('./data/%s%s.csv'%(filename,today_str),encoding='GB18030')  #'utf-8')
-        star_df.to_excel('./data/%s.xlsx'%(pre_name+today_str), sheet_name='%s'%today_str)
-        print 'The the star code today are saved as ./data/%s.xlsx'%(pre_name+today_str)
+        #df.to_csv(ROOT_DIR+'/data/%s%s.csv'%(filename,today_str),encoding='GB18030')  #'utf-8')
+        star_df.to_excel(ROOT_DIR+'/data/%s.xlsx'%(pre_name+today_str), sheet_name='%s'%today_str)
+        print 'The the star code today are saved as ROOT_DIR+/data/%s.xlsx'%(pre_name+today_str)
         """
         return star_df
     
@@ -2093,8 +2092,8 @@ class Market:
         potential_10_list=[]
         actual_10_list=[]
         success_rate=0
-        #hist_all_code=get_all_code('./hist')
-        all_codes=get_all_code('./update')
+        #hist_all_code=get_all_code('ROOT_DIR+/hist')
+        all_codes=get_all_code(ROOT_DIR+'/update')
         if code_list:
             all_codes=list(set(all_codes).intersection(set(code_list)))
         if all_codes:
@@ -2122,8 +2121,8 @@ class Market:
         potential_101_list=[]
         actual_101_list=[]
         success_rate=0
-        #hist_all_code=get_all_code('./hist')
-        all_codes=get_all_code('./update')
+        #hist_all_code=get_all_code('ROOT_DIR+/hist')
+        all_codes=get_all_code(ROOT_DIR+'/update')
         if code_list !=None:
             all_codes=list(set(all_codes).intersection(set(code_list)))
         #print 'all_codes=',all_codes
@@ -2222,7 +2221,7 @@ class Market:
         latest_trade_day=get_latest_trade_day()
         today_df,df_time_stamp=get_today_df()
         self.set_today_df(today_df)
-        out_file_name='./result/result-' + latest_trade_day + '.txt'
+        out_file_name=ROOT_DIR+'/result/result-' + latest_trade_day + '.txt'
         output=open(out_file_name,'w')
         sys.stdout=output
         #market=Market(today_df)
@@ -2242,7 +2241,7 @@ class Market:
         t_df=today_df
         df_10=t_df[t_df.index.isin(code_10)]
         #print df_10
-        filename='./data/is10-%s.csv' % latest_trade_day
+        filename=ROOT_DIR+'/data/is10-%s.csv' % latest_trade_day
         df_10.to_csv(filename)
         #code_10= ['002579', '002243', '002117', '000970', '600654', '000533', '600377', '300080', '600382', '600423', '600208', '601188', '002338', '002237', '002234', '000666', '600858', '601678', '300104', '002487', '600581', '600580', '002242', '600616', '600618', '002412', '002148', '600320', '000409', '600978', '600405', '600819', '600816', '002201', '002207', '002562', '000637', '601390', '000593', '600094', '600146', '600668', '000785', '601718', '300018', '002585', '600449', '600565', '600219', '300342', '600282', '002323', '002328', '300347', '600825', '000673', '601100', '300115', '002551', '002490', '002495', '002392', '600741', '600621', '002597', '002073', '000004', '600133', '601339', '000419', '000555', '600570', '603100', '600419', '000955', '000952', '000789', '300155', '002213', '601999', '600707', '600680', '600686', '600159', '601002', '002668', '002503', '600052', '002006', '002501', '600513', '600222', '600225', '300349', '600350', '300291', '600358', '600292', '000888', '601116', '300122', '300125', '601800', '002387', '002386', '002389', '002263', '601231', '600633', '601600', '002042', '600495', '002169', '600499', '600643', '600640', '600308', '000548', '300317', '300314', '300091', '600396', '000726', '000729', '002227', '603166', '603167', '600393', '600636', '002121', '002125', '600695', '002087', '603008', '600169', '000509', '000501', '601519', '601518', '002409', '600360', '000698', '600506', '600332', '600330', '002103', '002651', '300286', '002083', '603001', '000897', '600802']
         #print 'potential_101_list=',potential_101_list
@@ -2264,7 +2263,7 @@ class Monitor:
         
     def get_holding_statics(self):
         latest_trade_day=get_latest_trade_day()
-        out_file_name='./result/static-' + latest_trade_day + '.txt'
+        out_file_name=ROOT_DIR+'/result/static-' + latest_trade_day + '.txt'
         static_output=open(out_file_name,'w')
         sys.stdout=static_output
         #code_list=['600031','603988','603158','601018','002282','002556','600673','002678','000998','601088','600398']
@@ -2330,7 +2329,7 @@ class Monitor:
                             latest_trade_day=get_latest_trade_day()
                             my_df=pd.DataFrame(data,columns=column_list)        #empty df
                             for code in self.holding_stocks:
-                                out_file_name='./result/realtime_' +code +'_'+latest_trade_day + '.txt'
+                                out_file_name=ROOT_DIR+'/result/realtime_' +code +'_'+latest_trade_day + '.txt'
                                 realtime_output=open(out_file_name,'a')
                                 sys.stdout=realtime_output
                                 mystock=Stockhistory(code,ktype='D')
@@ -2425,8 +2424,8 @@ def thread_test():
     thread2.stop()  
           
 def test():
-    hist_dir='./hist'
-    hist_code=get_all_code('./hist')
+    hist_dir=ROOT_DIR+'/hist'
+    hist_code=get_all_code(hist_dir)
     print 'hist_code:',hist_code
     if len(hist_code)==0:
         print 'Begin pre-processing  the hist data'
@@ -2490,7 +2489,7 @@ def test1():
     """
     #actual_110_list,success_110_rate=market.get_110()
 def update_test():
-    file_name='./data/all2015-07-17.csv'
+    file_name=ROOT_DIR+'/data/all2015-07-17.csv'
     file_time_str=get_file_timestamp(file_name)
     print file_time_str
     today_df,today_df_update_time=get_today_df()
@@ -2500,7 +2499,7 @@ def test2():
     #init_all_hist_from_export()
     latest_trade_day=get_latest_trade_day()
     today_df,df_time_stamp=get_today_df()
-    out_file_name='./result/result-' + latest_trade_day + '.txt'
+    out_file_name=ROOT_DIR+'/result/result-' + latest_trade_day + '.txt'
     output=open(out_file_name,'w')
     sys.stdout=output
     market=Market(today_df)
@@ -2522,7 +2521,7 @@ def test2():
     t_df=market.today_df
     df_10=t_df[t_df.index.isin(code_10)]
     #print df_10
-    filename='./data/is10-%s.csv' % latest_trade_day
+    filename=ROOT_DIR+'/data/is10-%s.csv' % latest_trade_day
     df_10.to_csv(filename)
     #code_10= ['002579', '002243', '002117', '000970', '600654', '000533', '600377', '300080', '600382', '600423', '600208', '601188', '002338', '002237', '002234', '000666', '600858', '601678', '300104', '002487', '600581', '600580', '002242', '600616', '600618', '002412', '002148', '600320', '000409', '600978', '600405', '600819', '600816', '002201', '002207', '002562', '000637', '601390', '000593', '600094', '600146', '600668', '000785', '601718', '300018', '002585', '600449', '600565', '600219', '300342', '600282', '002323', '002328', '300347', '600825', '000673', '601100', '300115', '002551', '002490', '002495', '002392', '600741', '600621', '002597', '002073', '000004', '600133', '601339', '000419', '000555', '600570', '603100', '600419', '000955', '000952', '000789', '300155', '002213', '601999', '600707', '600680', '600686', '600159', '601002', '002668', '002503', '600052', '002006', '002501', '600513', '600222', '600225', '300349', '600350', '300291', '600358', '600292', '000888', '601116', '300122', '300125', '601800', '002387', '002386', '002389', '002263', '601231', '600633', '601600', '002042', '600495', '002169', '600499', '600643', '600640', '600308', '000548', '300317', '300314', '300091', '600396', '000726', '000729', '002227', '603166', '603167', '600393', '600636', '002121', '002125', '600695', '002087', '603008', '600169', '000509', '000501', '601519', '601518', '002409', '600360', '000698', '600506', '600332', '600330', '002103', '002651', '300286', '002083', '603001', '000897', '600802']
     #print 'potential_101_list=',potential_101_list
@@ -2562,7 +2561,7 @@ def test4():
     t_df=market.today_df
     df_10=t_df[t_df.index.isin(code_10)]
     print df_10
-    df_10.to_csv('./data/is10-2015-06-04.csv')
+    df_10.to_csv(ROOT_DIR+'/data/is10-2015-06-04.csv')
     potential_101_list=code_10
     potential_101_list= ['002579', '002243', '002117', '000970', '600654', '000533', '600377', '300080', '600382', '600423', '600208', '601188', '002338', '002237', '002234', '000666', '600858', '601678', '300104', '002487', '600581', '600580', '002242', '600616', '600618', '002412', '002148', '600320', '000409', '600978', '600405', '600819', '600816', '002201', '002207', '002562', '000637', '601390', '000593', '600094', '600146', '600668', '000785', '601718', '300018', '002585', '600449', '600565', '600219', '300342', '600282', '002323', '002328', '300347', '600825', '000673', '601100', '300115', '002551', '002490', '002495', '002392', '600741', '600621', '002597', '002073', '000004', '600133', '601339', '000419', '000555', '600570', '603100', '600419', '000955', '000952', '000789', '300155', '002213', '601999', '600707', '600680', '600686', '600159', '601002', '002668', '002503', '600052', '002006', '002501', '600513', '600222', '600225', '300349', '600350', '300291', '600358', '600292', '000888', '601116', '300122', '300125', '601800', '002387', '002386', '002389', '002263', '601231', '600633', '601600', '002042', '600495', '002169', '600499', '600643', '600640', '600308', '000548', '300317', '300314', '300091', '600396', '000726', '000729', '002227', '603166', '603167', '600393', '600636', '002121', '002125', '600695', '002087', '603008', '600169', '000509', '000501', '601519', '601518', '002409', '600360', '000698', '600506', '600332', '600330', '002103', '002651', '300286', '002083', '603001', '000897', '600802']
     print 'potential_101_list=',potential_101_list
@@ -2579,7 +2578,7 @@ def test4():
 
 def stock_test():
     latest_trade_day=get_latest_trade_day()
-    out_file_name='./result/static-' + latest_trade_day + '.txt'
+    out_file_name=ROOT_DIR+'/result/static-' + latest_trade_day + '.txt'
     output=open(out_file_name,'w')
     sys.stdout=output
     code_list=['600031','603988','603158','601018','002282','002556','600673','002678','000998','601088','600398']
@@ -2705,7 +2704,7 @@ def score_market():
                 if code_data['oper3'] ==3:
                     stronge_ma_3_list.append(code_str)
     
-    result_df.to_csv('./result/score_%s.csv' % this_time_str[:10])
+    result_df.to_csv(ROOT_DIR+'/result/score_%s.csv' % this_time_str[:10])
     if stronge_ma_3_list:
         print 'stronge_ma5_list=',stronge_ma_3_list
         stronge_ma5_df=today_df[today_df.index.isin(stronge_ma_3_list)]
@@ -2721,7 +2720,7 @@ def score_market():
     
 def atr_market():
     today_df,this_time_str=get_today_df()
-    file_name='./data/all2015-10-26.csv'
+    file_name=ROOT_DIR+'/data/all2015-10-26.csv'
     today_df=read_today_df(file_name)
     print today_df
     gt2_df=today_df[today_df['changepercent']>2.0]
@@ -2752,8 +2751,8 @@ def atr_market():
     print 'top5_average_all_market=',top5_average_all_market
     latest_break_20_df=today_df[today_df.index.isin(latest_break_20_list)]
     latest_break_55_df=today_df[today_df.index.isin(latest_break_55_list)]
-    latest_break_20_df.to_csv('./result_temp/atr_break_20_%s.csv' % latest_day_str)
-    latest_break_55_df.to_csv('./result_temp/atr_break_55_%s.csv' % latest_day_str)
+    latest_break_20_df.to_csv(ROOT_DIR+'/result_temp/atr_break_20_%s.csv' % latest_day_str)
+    latest_break_55_df.to_csv(ROOT_DIR+'/result_temp/atr_break_55_%s.csv' % latest_day_str)
     print 'latest_break_20_df:'
     print latest_break_20_df
     print 'latest_break_55_df:'
@@ -2763,8 +2762,8 @@ def atr_market():
 def back_test_atr():
     last_day_str=get_last_trade_day()
     today_df,this_time_str=get_today_df()
-    last_break_20_df=pd.read_csv('./result_temp/atr_break_20_%s.csv' % last_day_str)
-    last_break_55_df=pd.read_csv('./result_temp/atr_break_55_%s.csv' % last_day_str)
+    last_break_20_df=pd.read_csv(ROOT_DIR+'/result_temp/atr_break_20_%s.csv' % last_day_str)
+    last_break_55_df=pd.read_csv(ROOT_DIR+'/result_temp/atr_break_55_%s.csv' % last_day_str)
     last_break_20_code_list=last_break_20_df.index.values.tolist()
     last_break_55_code_list=last_break_55_df.index.values.tolist()
     latest_break_20_df=today_df[today_df.index.isin(last_break_20_code_list)]
