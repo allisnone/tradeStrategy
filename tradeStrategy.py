@@ -23,6 +23,8 @@ ISOTIMEFORMAT='%Y-%m-%d %X'
 #ISODATEFORMAT='%Y%m%d'
 ISODATEFORMAT='%Y-%m-%d'
 
+ROOT_DIR='E:/work/stockAnalyze'
+
 RAW_HIST_DIR='./export/'
 HIST_DIR='./hist/'
 HIST_FILE_TYPE='.csv'
