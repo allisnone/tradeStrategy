@@ -9,7 +9,6 @@ import json
 import string
 
 import urllib2
-import cons as ct
 import datetime
 from bs4 import BeautifulSoup
 
