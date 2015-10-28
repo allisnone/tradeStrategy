@@ -322,6 +322,7 @@ def write_today_df(file_name,today_df):
         
 def read_today_df(file_name):
     column_list=['code','changepercent','trade','open','high','low','settlement','volume','turnoverratio']
+    
     today_df=pd.read_csv(file_name,names=column_list)# header=1)
     #all_codes_f=today_df['code'].values.tolist()
     #print all_codes_f
@@ -2751,37 +2752,40 @@ def atr_market():
     print 'top5_average_all_market=',top5_average_all_market
     latest_break_20_df=today_df[today_df.index.isin(latest_break_20_list)]
     latest_break_20_df.index.name='code'
+    column_list=latest_break_20_df.columns.values.tolist()
+    #print 'column_list=',column_list
     latest_break_55_df=today_df[today_df.index.isin(latest_break_55_list)]
     latest_break_55_df.index.name='code'
     latest_break_20_df.to_csv(ROOT_DIR+'/result_temp/atr_break_20_%s.csv' % latest_day_str)
     latest_break_55_df.to_csv(ROOT_DIR+'/result_temp/atr_break_55_%s.csv' % latest_day_str)
-    print 'latest_break_20_df:'
-    print latest_break_20_df
-    print 'latest_break_55_df:'
-    print latest_break_55_df
+    #print 'latest_break_20_df:'
+    #print latest_break_20_df
+    #print 'latest_break_55_df:'
+    #print latest_break_55_df
     return latest_break_20_list,latest_break_55_list,top5_average_all_market
 
 def back_test_atr():
     last_day_str=get_last_trade_day()
     today_df,this_time_str=get_today_df()
-    print 'today_df=',today_df
+    #print 'today_df=',today_df
+    today_column_list= ['code','changepercent', 'trade', 'open', 'high', 'low', 'settlement', 'h_change', 'l_change', 'volume', 'turnoverratio']
     today_df_code_list=today_df.index.values.tolist()
     last_20_file_name=ROOT_DIR+'/result_temp/atr_break_20_%s.csv' % last_day_str
-    last_break_20_df=read_today_df(last_20_file_name)
+    last_break_20_df=pd.read_csv(last_20_file_name,index_col=0,names=today_column_list)
     last_55_file_name=ROOT_DIR+'/result_temp/atr_break_55_%s.csv' % last_day_str
-    last_break_55_df=read_today_df(last_55_file_name)
-    print last_break_20_df
+    last_break_55_df=pd.read_csv(last_55_file_name,index_col=0,names=today_column_list)
+    #print 'last_break_20_df=',last_break_20_df
     last_break_20_code_list=last_break_20_df.index.values.tolist()
-    print 'last_break_20_code_list=',last_break_20_code_list
+    #print 'last_break_20_code_list=',last_break_20_code_list
     last_break_20_code_list=list(set(last_break_20_code_list).intersection(set(today_df_code_list)))
     last_break_55_code_list=last_break_55_df.index.values.tolist()
     last_break_55_code_list=list(set(last_break_55_code_list).intersection(set(today_df_code_list)))
     latest_break_20_df=today_df[today_df.index.isin(last_break_20_code_list)]
-    print 'latest_break_20_df=',latest_break_20_df
+    #print 'latest_break_20_df=',latest_break_20_df
     latest_break_20_df_mean=latest_break_20_df['changepercent'].mean()
     latest_break_20_df_high_mean=latest_break_20_df['h_change'].mean()
     latest_break_55_df=today_df[today_df.index.isin(last_break_55_code_list)]
-    print 'latest_break_55_df=',latest_break_55_df
+    #print 'latest_break_55_df=',latest_break_55_df
     latest_break_55_df_mean=latest_break_55_df['changepercent'].mean()
     latest_break_55_df_high_mean=latest_break_55_df['h_change'].mean()
     
@@ -2793,7 +2797,7 @@ def back_test_atr():
     latest_day_str=get_latest_trade_day()
     latest_20_file_name=ROOT_DIR+'/result_temp/atr_break_20_%s.csv' % latest_day_str
     latest_break_20_df=pd.read_csv(latest_20_file_name)
-    print latest_break_20_df
+    #print latest_break_20_df
     #print latest_break_20_df.index.name=[code]
     latest_break_20_df=latest_break_20_df.set_index('code')
     
