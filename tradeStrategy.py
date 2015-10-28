@@ -2799,16 +2799,25 @@ def back_test_atr():
     
     latest_55_file_name=ROOT_DIR+'/result_temp/atr_break_55_%s.csv' % latest_day_str
     latest_break_55_df=pd.read_csv(latest_55_file_name)
+    latest_break_55_df=latest_break_55_df.set_index('code')
     latest_break_20_code_list=latest_break_20_df.index.values.tolist()
-    continue_break_20_list=list(set(latest_break_20_code_list).intersection(set(last_break_20_code_list)))
+    
     latest_break_20_code_list= json.loads(json.dumps(latest_break_20_code_list))
     last_break_20_code_list_int=[]
     for code_str in last_break_20_code_list:
         last_break_20_code_list_int.append(string.atoi(code_str))
-    print last_break_20_code_list_int
+    print 'last_break_20_code_list_int=',last_break_20_code_list_int
+    print 'latest_break_20_code_list=',latest_break_20_code_list
     continue_break_20_list=list(set(latest_break_20_code_list).intersection(set(last_break_20_code_list_int)))
     latest_break_55_code_list=latest_break_55_df.index.values.tolist()
-    continue_break_55_list=list(set(latest_break_55_code_list).intersection(set(last_break_55_code_list)))
+    latest_break_55_code_list= json.loads(json.dumps(latest_break_55_code_list))
+    last_break_55_code_list_int=[]
+    for code_str in last_break_55_code_list:
+        last_break_55_code_list_int.append(string.atoi(code_str))
+    print 'last_break_55_code_list_int=',last_break_55_code_list_int
+    continue_break_55_list=list(set(latest_break_55_code_list).intersection(set(last_break_55_code_list_int)))
+
+    print 'latest_break_55_code_list=', latest_break_55_code_list
     
     print 'continue_break_20_list=',continue_break_20_list
     print 'continue_break_55_list=',continue_break_55_list
