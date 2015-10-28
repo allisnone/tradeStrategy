@@ -8,45 +8,24 @@ import backtrader as bt
 
 import pandas
 
-"""
 # Create a Stratey
 class TestStrategy(bt.Strategy):
+    params = (
+        ('maperiod', 15),
+        ('stake', 10),
+        ('printlog', False),
+    )
 
-    def log(self, txt, dt=None):
+    def log(self, txt, dt=None, doprint=False):
         ''' Logging function fot this strategy'''
-        dt = dt or self.datas[0].datetime.date(0)
-        print('%s, %s' % (dt.isoformat(), txt))
+        if self.params.printlog or doprint:
+            dt = dt or self.datas[0].datetime.date(0)
+            print('%s, %s' % (dt.isoformat(), txt))
 
     def __init__(self):
         # Keep a reference to the "close" line in the data[0] dataseries
         self.dataclose = self.datas[0].close
 
-    def next(self):
-        # Simply log the closing price of the series from the reference
-        self.log('Close, %.2f' % self.dataclose[0])
-"""
-class TestStrategy(bt.Strategy):
-    """
-    params = (
-        ('stake', 4000),
-        ('exitbars', 4),
-    )
-    """
-    params = (
-        ('s_maperiod', 5),
-        ('l_maperiod', 10),
-        ('stake', 100),
-    )
-
-    def log(self, txt, dt=None):
-        ''' Logging function fot this strategy'''
-        dt = dt or self.datas[0].datetime.date(0)
-        print('%s, %s' % (dt.isoformat(), txt))
-
-    def __init__(self):
-        # Keep a reference to the "close" line in the data[0] dataseries
-        self.dataclose = self.datas[0].close
-        
         # Set the sizer stake from the params
         self.sizer.setsizing(self.params.stake)
 
@@ -54,22 +33,10 @@ class TestStrategy(bt.Strategy):
         self.order = None
         self.buyprice = None
         self.buycomm = None
-        
+
         # Add a MovingAverageSimple indicator
-        self.s_sma = bt.indicators.SimpleMovingAverage(
-            self.datas[0], period=self.params.s_maperiod)
-        self.l_sma = bt.indicators.SimpleMovingAverage(
-            self.datas[0], period=self.params.l_maperiod)
-        
-        # Indicators for the plotting show
-        bt.indicators.ExponentialMovingAverage(self.datas[0], period=25)
-        bt.indicators.WeightedMovingAverage(self.datas[0], period=25,
-                                            subplot=True)
-        bt.indicators.StochasticSlow(self.datas[0])
-        bt.indicators.MACDHisto(self.datas[0])
-        rsi = bt.indicators.RSI(self.datas[0])
-        bt.indicators.SmoothedMovingAverage(rsi, period=10)
-        bt.indicators.ATR(self.datas[0], subplot=True)#plot=False)
+        self.sma = bt.indicators.SimpleMovingAverage(
+            self.datas[0], period=self.params.maperiod)
 
     def notify_order(self, order):
         if order.status in [order.Submitted, order.Accepted]:
@@ -116,40 +83,44 @@ class TestStrategy(bt.Strategy):
 
         # Check if we are in the market
         if not self.position:
-            """
+
             # Not yet ... we MIGHT BUY if ...
-            if self.dataclose[0] > 1.01*self.dataclose[-1]: #and self.dataclose[0] > 1.03*self.dataclose[-1]:
-                    # current close less than previous close
+            if self.dataclose[0] > self.sma[0]:
 
-                    if self.dataclose[-1] > 1.01*self.dataclose[-2]:
-            """
-            if self.dataclose[0] > self.s_sma[0]:
-                        # previous close less than the previous close
+                # BUY, BUY, BUY!!! (with all possible default parameters)
+                self.log('BUY CREATE, %.2f' % self.dataclose[0])
 
-                        # BUY, BUY, BUY!!! (with default parameters)
-                        self.log('BUY CREATE, %.2f' % self.dataclose[0])
-
-                        # Keep track of the created order to avoid a 2nd order
-                        self.order = self.buy()
+                # Keep track of the created order to avoid a 2nd order
+                self.order = self.buy()
 
         else:
 
-            # Already in the market ... we might sell
-            #if len(self) >= (self.bar_executed +  self.params.exitbars):
-            if self.dataclose[0] < self.l_sma[0]:
+            if self.dataclose[0] < self.sma[0]:
                 # SELL, SELL, SELL!!! (with all possible default parameters)
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.sell()
+
+    def stop(self):
+        self.log('(MA Period %2d) Ending Value %.2f' %
+                 (self.params.maperiod, self.broker.getvalue()), doprint=True)
+
+
 def runstrat():
+    # Create a cerebro entity
+    cerebro = bt.Cerebro()
+
+    # Add a strategy
+    strats = cerebro.optstrategy(
+        TestStrategy,
+        maperiod=range(5, 31))
+
     args = parse_args()
 
     # Create a cerebro entity
-    cerebro = bt.Cerebro(stdstats=False)
+    #cerebro = bt.Cerebro(stdstats=False)
 
-    # Add a strategy
-    cerebro.addstrategy(TestStrategy)
 
     # Get a pandas dataframe
     datapath = ('E:/work/stockAnalyze/update/002678.csv')
@@ -188,15 +159,15 @@ def runstrat():
     cerebro.broker.setcommission(commission=0.0025)
 
     # Print out the starting conditions
-    print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
+    #print('Starting Portfolio Value: %.2f' % cerebro.broker.getvalue())
 
 
     # Run over everything
     cerebro.run()
     # Print out the final result
-    print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
+    #print('Final Portfolio Value: %.2f' % cerebro.broker.getvalue())
     # Plot the result
-    cerebro.plot(style='bar')
+    #cerebro.plot(style='bar')
 
 
 def parse_args():
