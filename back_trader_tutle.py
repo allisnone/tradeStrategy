@@ -47,6 +47,7 @@ class TestStrategy(bt.Strategy):
 
     def __init__(self):
         # Keep a reference to the "close" line in the data[0] dataseries
+        print ('datas=%s' % self.datas[0])
         self.dataclose = self.datas[0].close
         self.datahigh = self.datas[0].high
         self.datalow = self.datas[0].low
@@ -136,14 +137,17 @@ class TestStrategy(bt.Strategy):
             """
             if self.datahigh[0] > self.highest[0]:
                         # previous close less than the previous close
-
+                        
                         # BUY, BUY, BUY!!! (with default parameters)
                         self.log('BUY CREATE, %.2f' % self.dataclose[0])
                         self.log('atr of BUY point, %.2f' % self.atr[0])
                         self.params.exit_point=self.dataclose[0]-2.0*self.atr[0]
                         self.params.buy_point_atr=self.atr[0]
-
+                        #cash=100000.00
+                        #buy_price=self.highest[0]
+                        #buy_size=0.01*cash/(self.params.buy_point_atr*100*buy_price)
                         # Keep track of the created order to avoid a 2nd order
+                        #self.order = self.buy(size=buy_size,price=buy_price)
                         self.order = self.buy()
 
         else:
@@ -187,8 +191,8 @@ def runstrat():
         print('--------------------------------------------------')
     
     dataframe[str('Openinterest')]=0.0
-    print ("dataframe with openinterest column:")
-    print(dataframe)
+    #print ("dataframe with openinterest column:")
+    #print(dataframe)
 
     # Pass it to the backtrader datafeed and add it to the cerebro
     data = bt.feeds.PandasData(dataname=dataframe)
