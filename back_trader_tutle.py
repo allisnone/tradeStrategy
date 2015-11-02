@@ -186,15 +186,16 @@ class MaStrategy(bt.Strategy):
     """
     params = (
         ('s_maperiod', 5),
-        ('l_maperiod',10),
-        ('stake', 100),
+        ('l_maperiod',10),              #8-9 will be better
+        ('stake', 1000),
         ('exit_point',1.0),
         ('buy_point_atr',1),
         ('terminate_profit_factor',18.0),           #1.6-1.8 will be more better
         ('printlog', False),
+        ('second_buy',False)
     )
 
-    def log(self, txt, dt=None,doprint=False):
+    def log(self, txt, dt=None,doprint=True):
         ''' Logging function fot this strategy'''
         if self.params.printlog or doprint:
             dt = dt or self.datas[0].datetime.date(0)
@@ -296,7 +297,7 @@ class MaStrategy(bt.Strategy):
 
                     if self.dataclose[-1] > 1.01*self.dataclose[-2]:
             """
-            if self.s_sma[-1]<self.l_sma[-1] and self.s_sma[0]>=self.l_sma[0]:
+            if (self.s_sma[-1]<self.l_sma[-1] and self.s_sma[0]>=self.l_sma[0]) or(self.params.second_buy and self.dataclose[0]>self.s_sma[0]):
                         # previous close less than the previous close
                         
                         # BUY, BUY, BUY!!! (with default parameters)
@@ -322,16 +323,21 @@ class MaStrategy(bt.Strategy):
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.sell()
+                self.params.second_buy=True
                 
     def stop(self):
+        """
         self.log('(terminate_profit_factor Period %.2f) Ending Value %.2f' %
                  (self.params.terminate_profit_factor*0.1, self.broker.getvalue()), doprint=True)
+        """
+        self.log('(l_maperiod Period %2d) Ending Value %.2f' % 
+                 (self.params.l_maperiod, self.broker.getvalue()), doprint=True)
 def runstrat():
     args = parse_args()
 
     # Create a cerebro entity
     #cerebro = bt.Cerebro()  # default kwarg: stdstats=True
-    cerebro = bt.Cerebro(stdstats=False)
+    cerebro = bt.Cerebro(stdstats=True)
     #cerebro = bt.Cerebro(stdstats=True)
     #cerebro.addobserver(bt.observers.Broker)
     #cerebro.addobserver(bt.observers.Trades)
@@ -340,17 +346,23 @@ def runstrat():
     # Add a strategy
     #cerebro.addstrategy(TutleStrategy)
     
-    #cerebro.addstrategy(MaStrategy)
-    #"""
+    cerebro.addstrategy(MaStrategy)
+    """
     strats = cerebro.optstrategy(
         MaStrategy,
         terminate_profit_factor=range(1, 30))
-    #"""
+    """
+    """
+    strats = cerebro.optstrategy(
+        MaStrategy,
+        l_maperiod=range(11, 60))
+    """
     # Get a pandas dataframe
     datapath = ('E:/work/stockAnalyze/update/002678.csv')
     #datapath = ('E:/work/stockAnalyze/update/002466.csv')
     #datapath = ('E:/work/stockAnalyze/update/002189.csv')
     #datapath = ('E:/work/stockAnalyze/update/600673.csv')
+    #datapath = ('E:/work/stockAnalyze/update/300033.csv')
 
     # Simulate the header row isn't there if noheaders requested
     skiprows = 1 if args.noheaders else 0
