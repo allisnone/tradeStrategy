@@ -126,21 +126,29 @@ def get_hist_df(code_str,analyze_type,latest_count=None):
     code_str=str(code_str)
     file_name=target_dir+code_str+'.'+ file_type
     #print 'file_name:',file_name
+    data={}
     column_list=['date','open','high','low','close','volume']#,'rmb']
-    df_0=pd.read_csv(file_name,names=column_list, header=0)
-    #column_list=['date','open','high','low','close','volume']
-    """"check"""
-    #df= df_0.set_index('date')
-    #df=df_0.ix[:'2015-05-22']
-    #df.index.name='date'
-    """check"""
-    default_count=1000
-    if latest_count!=None and latest_count<len(df_0):
-        default_count=latest_count
-    df=df_0.tail(min(default_count,len(df_0)))
-    #df=df.set_index('date')
-    file_mt_str= get_file_timestamp(file_name)
+    df=pd.DataFrame(data=data,columns=column_list)
+    now_time=datetime.datetime.now()
+    file_mt_str=now_time.strftime("%Y-%m-%d %X")
+    try:
+        hist_df=pd.read_csv(file_name,names=column_list, header=0)
+        #column_list=['date','open','high','low','close','volume']
+        """"check"""
+        #df= df_0.set_index('date')
+        #df=df_0.ix[:'2015-05-22']
+        #df.index.name='date'
+        """check"""
+        default_count=10000
+        if latest_count!=None and latest_count<len(hist_df):
+            default_count=latest_count
+        df=hist_df.tail(min(default_count,len(hist_df)))
+            #df=df.set_index('date')
+        file_mt_str= get_file_timestamp(file_name)
+    except:
+        pass
     return df,file_mt_str
+  
 
 def f_code_2sybol(code_f):
     #print 'code_f:',code_f
@@ -711,6 +719,9 @@ class Stockhistory:
     
     #form temp df with 'last_close' for calculating p_change    
     def _form_temp_df(self):
+        
+        if len(self.h_df) ==0:
+            return self.h_df
         df=self.h_df
         close_c=df['close']
         idx=close_c.index.values.tolist()
@@ -800,6 +811,8 @@ class Stockhistory:
         #based on MA5
         #scoring based on recent three day's close: -5 to 5
         temp_df=self._form_temp_df()
+        if len(temp_df)==0:
+            return {}
         ma_offset=0.01
         temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])>ma_offset*temp_df['close'].shift(1),1,0)       #1 as over ma; 0 for near ma but unclear
         temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])<-ma_offset*temp_df['close'].shift(1),-1,temp_df['c_o_ma']) #-1 for bellow ma
@@ -1089,6 +1102,8 @@ class Stockhistory:
     
     def get_atr_df(self,short_num, long_num):
         temp_df=self.h_df
+        if len(temp_df)==0:
+            return temp_df,'','',0.0
         temp_df.is_copy=False  
         #temp_df.fillna(0)
         #temp_df.fillna(method='pad')
@@ -2699,6 +2714,7 @@ def score_market():
         for code_str in all_codes:
             stock=Stockhistory(code_str,'D')
             code_data=stock.get_trade_df(ma_type,ma_offset,great_score,great_change)
+            #print 'code_data=',code_data
             if code_data:
                 code_df=pd.DataFrame(code_data,index=['code'],columns=result_column)
                 result_df=result_df.append(code_df,ignore_index=True)

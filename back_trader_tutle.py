@@ -43,8 +43,8 @@ class TutleStrategy(bt.Strategy):
     )
     """
     params = (
-        ('s_maperiod', 5),
-        ('l_maperiod', 10),
+        ('s_maperiod', 25),
+        ('l_maperiod', 250),
         ('stake', 100),
         ('exit_point',1.0),
         ('buy_point_atr',1),
@@ -151,7 +151,7 @@ class TutleStrategy(bt.Strategy):
 
                     if self.dataclose[-1] > 1.01*self.dataclose[-2]:
             """
-            if self.datahigh[0] > self.highest[0]:
+            if self.datahigh[0] > self.highest[0] and self.s_sma[0]>self.l_sma[0]:
                         # previous close less than the previous close
                         
                         # BUY, BUY, BUY!!! (with default parameters)
@@ -170,8 +170,8 @@ class TutleStrategy(bt.Strategy):
 
             # Already in the market ... we might sell
             #if len(self) >= (self.bar_executed +  self.params.exitbars):
-            #if self.datalow[0] < self.lowest[0] or  self.dataclose[0] < self.params.exit_point:
-            if self.datalow[0] < self.lowest[0] or  self.dataclose[0] <(self.datahigh[0]-1.0*self.params.buy_point_atr):#self.dataclose[0] < self.l_sma[0]
+            if self.datalow[0] < self.lowest[0] or  self.dataclose[0] < self.params.exit_point or self.dataclose[0] > self.s_sma[0]+2.0*self.atr[0]:
+            #if self.datalow[0] < self.lowest[0] or  self.dataclose[0] <(self.datahigh[0]-1.0*self.params.buy_point_atr):#self.dataclose[0] < self.l_sma[0]
                 # SELL, SELL, SELL!!! (with all possible default parameters)
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
 
@@ -187,7 +187,7 @@ class MaStrategy(bt.Strategy):
     params = (
         ('s_maperiod', 5),
         ('l_maperiod',10),              #8-9 will be better
-        ('stake', 1000),
+        ('stake', 100),
         ('exit_point',1.0),
         ('buy_point_atr',1),
         ('terminate_profit_factor',18.0),           #1.6-1.8 will be more better
@@ -344,9 +344,9 @@ def runstrat():
     #cerebro.addobserver(bt.observers.BuySell)
 
     # Add a strategy
-    #cerebro.addstrategy(TutleStrategy)
+    cerebro.addstrategy(TutleStrategy)
     
-    cerebro.addstrategy(MaStrategy)
+    #cerebro.addstrategy(MaStrategy)
     """
     strats = cerebro.optstrategy(
         MaStrategy,
