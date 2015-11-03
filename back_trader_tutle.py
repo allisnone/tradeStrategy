@@ -344,9 +344,9 @@ def runstrat():
     #cerebro.addobserver(bt.observers.BuySell)
 
     # Add a strategy
-    cerebro.addstrategy(TutleStrategy)
+    #cerebro.addstrategy(TutleStrategy)
     
-    #cerebro.addstrategy(MaStrategy)
+    cerebro.addstrategy(MaStrategy)
     """
     strats = cerebro.optstrategy(
         MaStrategy,

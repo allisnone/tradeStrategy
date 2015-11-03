@@ -814,6 +814,7 @@ class Stockhistory:
         if len(temp_df)==0:
             return {}
         ma_offset=0.01
+        temp_df['pv_rate']=(temp_df['p_change']/100/(temp_df['volume']-temp_df['volume'].shift(1))*temp_df['volume'].shift(1)).round(2)
         temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])>ma_offset*temp_df['close'].shift(1),1,0)       #1 as over ma; 0 for near ma but unclear
         temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])<-ma_offset*temp_df['close'].shift(1),-1,temp_df['c_o_ma']) #-1 for bellow ma
         #print temp_df
@@ -867,6 +868,7 @@ class Stockhistory:
         #print result_list
         #"""
         temp_df.to_csv(ROOT_DIR+'/trade_temp/%s.csv'%self.code)
+        #print 'temp_df=',temp_df
         return result_data
     
     def get_trade_df0(self,ma_type='ma5',ma_offset=0.01,great_score=4,great_change=5.0):
