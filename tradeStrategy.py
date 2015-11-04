@@ -742,6 +742,8 @@ class Stockhistory:
         temp_df['ma30'] = np.round(pd.rolling_mean(temp_df['close'], window=30), 2)
         temp_df['ma60'] = np.round(pd.rolling_mean(temp_df['close'], window=60), 2)
         temp_df['ma120'] = np.round(pd.rolling_mean(temp_df['close'], window=120), 2)
+        temp_df['v_ma5'] = np.round(pd.rolling_mean(temp_df['volume'], window=5), 2)
+        temp_df['v_ma10'] = np.round(pd.rolling_mean(temp_df['volume'], window=10), 2)
         temp_df.insert(14, 'h_change', 100.00*((temp_df.high-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(15, 'l_change', 100.00*((temp_df.low-temp_df.last_close)/temp_df.last_close).round(4))
         return temp_df
@@ -815,6 +817,7 @@ class Stockhistory:
             return {}
         ma_offset=0.01
         temp_df['pv_rate']=(temp_df['p_change']/100/(temp_df['volume']-temp_df['volume'].shift(1))*temp_df['volume'].shift(1)).round(2)
+        temp_df['v_rate']=(temp_df['volume']/temp_df['v_ma5'].shift(1)).round(2)
         temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])>ma_offset*temp_df['close'].shift(1),1,0)       #1 as over ma; 0 for near ma but unclear
         temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])<-ma_offset*temp_df['close'].shift(1),-1,temp_df['c_o_ma']) #-1 for bellow ma
         #print temp_df

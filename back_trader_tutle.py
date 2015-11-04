@@ -297,7 +297,7 @@ class MaStrategy(bt.Strategy):
 
                     if self.dataclose[-1] > 1.01*self.dataclose[-2]:
             """
-            if (self.s_sma[-1]<self.l_sma[-1] and self.s_sma[0]>=self.l_sma[0]) or(self.params.second_buy and self.dataclose[0]>self.s_sma[0]):
+            if (self.s_sma[-1]<self.l_sma[-1] and self.s_sma[0]>=self.l_sma[0]):# or(self.params.second_buy and self.dataclose[0]>self.s_sma[0]):
                         # previous close less than the previous close
                         
                         # BUY, BUY, BUY!!! (with default parameters)
@@ -317,13 +317,13 @@ class MaStrategy(bt.Strategy):
             # Already in the market ... we might sell
             #if len(self) >= (self.bar_executed +  self.params.exitbars):
             #if self.datalow[0] < self.lowest[0] or  self.dataclose[0] < self.params.exit_point:
-            if (self.s_sma[-1]>=self.l_sma[-1] and self.s_sma[0]<self.l_sma[0]) or self.dataclose[0]>(self.s_sma[0]+0.1*self.params.terminate_profit_factor*self.atr[-1]):#self.params.buy_point_atr):
+            if (self.s_sma[-1]>=self.l_sma[-1] and self.s_sma[0]<self.l_sma[0]): #or self.dataclose[0]>(self.s_sma[0]+0.1*self.params.terminate_profit_factor*self.atr[-1]):#self.params.buy_point_atr):
                 # SELL, SELL, SELL!!! (with all possible default parameters)
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
 
                 # Keep track of the created order to avoid a 2nd order
                 self.order = self.sell()
-                self.params.second_buy=True
+                #self.params.second_buy=True
                 
     def stop(self):
         """
