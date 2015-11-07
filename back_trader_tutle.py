@@ -48,6 +48,7 @@ class TutleStrategy(bt.Strategy):
         ('stake', 100),
         ('exit_point',1.0),
         ('buy_point_atr',1),
+        ('exitbars', 1),
     )
 
     def log(self, txt, dt=None):
@@ -195,7 +196,7 @@ class MaStrategy(bt.Strategy):
         ('second_buy',False)
     )
 
-    def log(self, txt, dt=None,doprint=True):
+    def log(self, txt, dt=None,doprint=False):
         ''' Logging function fot this strategy'''
         if self.params.printlog or doprint:
             dt = dt or self.datas[0].datetime.date(0)
@@ -317,7 +318,7 @@ class MaStrategy(bt.Strategy):
             # Already in the market ... we might sell
             #if len(self) >= (self.bar_executed +  self.params.exitbars):
             #if self.datalow[0] < self.lowest[0] or  self.dataclose[0] < self.params.exit_point:
-            if (self.s_sma[-1]>=self.l_sma[-1] and self.s_sma[0]<self.l_sma[0]): #or self.dataclose[0]>(self.s_sma[0]+0.1*self.params.terminate_profit_factor*self.atr[-1]):#self.params.buy_point_atr):
+            if (self.s_sma[-1]>=self.l_sma[-1] and self.s_sma[0]<self.l_sma[0]) or self.dataclose[0]>(self.s_sma[0]+0.1*self.params.terminate_profit_factor*self.atr[-1]):#self.params.buy_point_atr):
                 # SELL, SELL, SELL!!! (with all possible default parameters)
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
 
@@ -326,12 +327,13 @@ class MaStrategy(bt.Strategy):
                 #self.params.second_buy=True
                 
     def stop(self):
-        """
+        #"""
         self.log('(terminate_profit_factor Period %.2f) Ending Value %.2f' %
                  (self.params.terminate_profit_factor*0.1, self.broker.getvalue()), doprint=True)
         """
         self.log('(l_maperiod Period %2d) Ending Value %.2f' % 
                  (self.params.l_maperiod, self.broker.getvalue()), doprint=True)
+        """
 class MiniATRStrategy(bt.Strategy):
     """
     params = (
@@ -341,10 +343,12 @@ class MiniATRStrategy(bt.Strategy):
     """
     params = (
         ('s_maperiod', 5),
-        ('l_maperiod', 250),
+        ('l_maperiod', 10),
         ('stake', 100),
         ('exit_point',1.0),
         ('buy_point_atr',1),
+        ('exitbars',10)
+        #('atr_period',10)
     )
 
     def log(self, txt, dt=None):
@@ -374,13 +378,26 @@ class MiniATRStrategy(bt.Strategy):
         self.l_sma = bt.indicators.SimpleMovingAverage(
             self.datas[0], period=self.params.l_maperiod)
         self.atr=bt.indicators.ATR(self.datas[0])
-        print('type of atr',type(self.atr))
+        #print('type of atr',type(self.atr))
         # Indicators for the plotting show
+        #self.tr=max(self.datahigh[0]-self.datalow[0],abs(self.datahigh[0]-self.dataclose[-1],abs(self.datalow[0]-self.dataclose[-1])))
+        #self.tr=max((self.data[0].high-self.data[0].low),0.0)#abs(self.data[0].high-self.data[0].close,abs(self.data[0].low-self.datac[0].close)))
         self.max_atr=bt.indicators.Highest(self.atr,period=20)
         self.min_atr=bt.indicators.Lowest(self.atr,period=20)
         print('mini atr=',self.min_atr)
+        """
+        self.max_atr=bt.indicators.Highest(self.atr,period=20)
+        self.min_atr=bt.indicators.Lowest(self.atr,period=20)
+        print('mini atr=',self.min_atr)
+        """
         self.highest=bt.indicators.Highest(self.datas[0],period=20)
         self.lowest=bt.indicators.Lowest(self.datas[0],period=20)
+        
+        #self.max_atr=0.00
+        #self.min_atr=10000.00
+        self.atr_period=10
+        self.bar_executed=0
+        
         #self.highest=bt.indicators.Highest(self.datahigh,period=20)
         #self.lowest=bt.indicators.Lowest(self.datalow,period=20)
         #cash=self.stats.broker.cash[0]
@@ -439,6 +456,7 @@ class MiniATRStrategy(bt.Strategy):
         # Simply log the closing price of the series from the reference
         self.log('Close, %.2f' % self.dataclose[0])
         self.log('High, %.2f' % self.datahigh[0])
+        print('max_atr,%.2f' % self.max_atr[0])
         self.log('max_atr,%.2f' % self.max_atr[0])
         self.log('mini_atr,%.2f' % self.min_atr[0])
         self.log('current_atr,%.2f' % self.atr[0])
@@ -448,6 +466,15 @@ class MiniATRStrategy(bt.Strategy):
             return
 
         # Check if we are in the market
+        
+        tr_now=max(max((self.datahigh[0]-self.datalow[0]),abs(self.datahigh[0]-self.dataclose[-1])),abs(self.datalow[0]-self.dataclose[-1]))
+        print('tr_now=',tr_now)
+        """
+        if tr_now>=self.max_atr:
+            self.max_atr=tr_now
+        if tr_now<self.min_atr:
+            self.min_atr=tr_now
+        """
         if not self.position:
             """
             # Not yet ... we MIGHT BUY if ...
@@ -456,14 +483,15 @@ class MiniATRStrategy(bt.Strategy):
 
                     if self.dataclose[-1] > 1.01*self.dataclose[-2]:
             """
-            if self.datahigh[0] > self.highest[0] and self.s_sma[0]>self.l_sma[0]:
+            #if self.datahigh[0] > self.highest[0] and self.s_sma[0]>self.l_sma[0]:
+            if tr_now<0.5*self.atr[0]:
                         # previous close less than the previous close
                         
                         # BUY, BUY, BUY!!! (with default parameters)
                         self.log('BUY CREATE, %.2f' % self.dataclose[0])
-                        self.log('atr of BUY point, %.2f' % self.atr[0])
-                        self.params.exit_point=self.dataclose[0]-2.0*self.atr[0]
-                        self.params.buy_point_atr=self.atr[0]
+                        #self.log('atr of BUY point, %.2f' % self.atr[0])
+                        self.params.exit_point=self.dataclose[0]+5.0*self.atr[0]
+                        #self.params.buy_point_atr=self.atr[0]
                         #cash=100000.00
                         #buy_price=self.highest[0]
                         #buy_size=0.01*cash/(self.params.buy_point_atr*100*buy_price)
@@ -474,8 +502,8 @@ class MiniATRStrategy(bt.Strategy):
         else:
 
             # Already in the market ... we might sell
-            #if len(self) >= (self.bar_executed +  self.params.exitbars):
-            if self.datalow[0] < self.lowest[0] or  self.dataclose[0] < self.params.exit_point or self.dataclose[0] > self.s_sma[0]+2.0*self.atr[0]:
+            if len(self) >= (self.bar_executed +  self.params.exitbars) or self.dataclose[0] >self.params.exit_point:
+            #if self.datalow[0] < self.lowest[0] or  self.dataclose[0] < self.params.exit_point or self.dataclose[0] > self.s_sma[0]+2.0*self.atr[0]:
             #if self.datalow[0] < self.lowest[0] or  self.dataclose[0] <(self.datahigh[0]-1.0*self.params.buy_point_atr):#self.dataclose[0] < self.l_sma[0]
                 # SELL, SELL, SELL!!! (with all possible default parameters)
                 self.log('SELL CREATE, %.2f' % self.dataclose[0])
@@ -487,7 +515,7 @@ def runstrat():
 
     # Create a cerebro entity
     #cerebro = bt.Cerebro()  # default kwarg: stdstats=True
-    cerebro = bt.Cerebro(stdstats=True)
+    cerebro = bt.Cerebro(stdstats=False)
     #cerebro = bt.Cerebro(stdstats=True)
     #cerebro.addobserver(bt.observers.Broker)
     #cerebro.addobserver(bt.observers.Trades)
@@ -496,13 +524,13 @@ def runstrat():
     # Add a strategy
     #cerebro.addstrategy(TutleStrategy)
     
-    cerebro.addstrategy(MaStrategy)
-    cerebro.addstrategy(MiniATRStrategy)
-    """
+    #cerebro.addstrategy(MaStrategy)
+    #cerebro.addstrategy(MiniATRStrategy)
+    #"""
     strats = cerebro.optstrategy(
         MaStrategy,
         terminate_profit_factor=range(1, 30))
-    """
+    #"""
     """
     strats = cerebro.optstrategy(
         MaStrategy,

@@ -1161,7 +1161,7 @@ class Stockhistory:
         if df_55['date'].values.tolist():latest_break_55=df_55['date'].values.tolist()[-1]
         temp_df.to_csv(ROOT_DIR+'/result_temp/atr_%s.csv' % self.code)
         #print temp_df
-        #print temp_df['atr_rate'].value_counts()
+        print temp_df['atr_rate'].value_counts()
         atr_s= (temp_df['atr_rate'].value_counts()/temp_df['atr_rate'].count()).round(2)
         #print 'atr_static:'
         #print atr_s
