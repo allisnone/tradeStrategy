@@ -266,6 +266,18 @@ def find_boduan(data_list):
     split_list.append(lst_value)
     return split_list
 
+def specify_rate_range(init_rate=-1.5,rate_interval=0.5,range_num=10):
+    """
+    return the range to seperate the rate in class 
+    """
+    rate_list=[]
+    for i in range(0,range_num):
+        rate=round(init_rate+i*rate_interval,1)
+        rate_list.append(rate)
+        if rate>10.95 or rate <-9.0:
+            break
+    return rate_list
+
 def get_today_df():
     this_time=datetime.datetime.now()
     this_time_str=this_time.strftime('%Y-%m-%d %X')
@@ -785,6 +797,30 @@ class Stockhistory:
         temp_df.insert(14, 'h_change', 100.00*((temp_df.high-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(15, 'l_change', 100.00*((temp_df.low-temp_df.last_close)/temp_df.last_close).round(4))
         return temp_df
+    
+    def change_static(self,rate_list,column):
+        temp_df=self._form_temp_df()
+        N=len(temp_df)
+        if N<50:
+            return pd.DataFrame({})
+        else:
+            #Do not consider special first 30 days for each stock 
+            temp_df=temp_df[30:]
+        gt_column=['code']
+        #gt_column=['code']
+        gt_data={}
+        gt_data['code']=self.code
+        for rate in rate_list:
+            df=temp_df[temp_df[column]>rate]
+            gt_rate_num=len(df)
+            gt_rate=round(float(gt_rate_num)/N,2)
+            column_name='gt_%s' % rate
+            gt_data[column_name]=gt_rate
+            gt_column.append(column_name)
+        gt_static_df=pd.DataFrame(gt_data,columns=gt_column,index=['0'])
+        #print 'static for %s:' % column
+        #print gt_static_df 
+        return gt_static_df
     
     def get_open_static(self,high_open_rate):
         trade_rate=0.2
@@ -2784,6 +2820,105 @@ def atr_market():
     #print 'latest_break_55_df:'
     #print latest_break_55_df
     return latest_break_20_list,latest_break_55_list,top5_average_all_market
+
+def change_static_market():
+    code='002678'
+    #code='000987'
+    #code='601018'
+    code='002466'
+    #code='600650'
+    #code='300244'
+    #code='000001'
+    #code='300033'
+    #code='000821'
+    short_num=20
+    long_num=55
+    dif_num=9
+    current_price=12.10
+    
+    init_rate=-2.5
+    rate_interval=0.5
+    range_num=18
+    rate_list=specify_rate_range(init_rate, rate_interval, range_num)
+    df_data={}
+    column_list=['code']
+    #gt_data['code']=code
+    for rate in rate_list:
+        column_name='gt_%s' % rate
+        column_list.append(column_name)
+    empty_df=pd.DataFrame(df_data,columns=column_list)#,index=[''])
+    #print 'static_df=',static_df
+    static_df_h=static_df_l=static_df_p=empty_df
+    today_df,this_time_str=get_today_df()
+    #file_name=ROOT_DIR+'/data/all2015-10-26.csv'
+    #today_df=read_today_df(file_name)
+    #print today_df
+    gt2_df=today_df[today_df['changepercent']>2.0]
+    #print today_df
+    short_num=20
+    long_num=55
+    all_codes=today_df.index.values.tolist()
+    latest_break_20_list=[]
+    latest_break_55_list=[]
+    top5_average_sum=0.0
+    latest_day_str=get_latest_trade_day()
+    #print 'latest_day_str=',latest_day_str
+    for code in all_codes:
+        stock=Stockhistory(code,'D')
+        gt_static_df_h=stock.change_static(rate_list,column='h_change')
+        gt_static_df_p=stock.change_static(rate_list,column='p_change')
+        gt_static_df_l=stock.change_static(rate_list,column='l_change')
+        if gt_static_df_h.empty:
+            pass
+        else:
+            static_df_h=static_df_h.append(gt_static_df_h, ignore_index=True)
+        if gt_static_df_p.empty:
+            pass
+        else:
+            static_df_p=static_df_p.append(gt_static_df_p, ignore_index=True)
+        if gt_static_df_l.empty:
+            pass
+        else:
+            static_df_l=static_df_l.append(gt_static_df_l, ignore_index=True)
+            #print 'static_df=',static_df
+    """
+        for rate_t_h in rate_list:
+            max_profit_loss_ratio=0.0
+            max_rate_t_l=0.0
+            max_rate_t_h=0.0
+            for rate_t_l in rate_list:
+                if rate_t_h>rate_t_l and rate_t_h>=0.5 and rate_t_l<=0.5:
+                    column_name_h='gt_%s' % rate_t_h
+                    column_name_l='gt_%s' % rate_t_l
+                    h_rate=gt_static_df_h[column_name_h].mean()
+                    l_rate=gt_static_df_l[column_name_l].mean()
+                    profit_loss_ratio=round(h_rate/(1-l_rate),2)
+                    if profit_loss_ratio>=max_profit_loss_ratio:
+                        max_profit_loss_ratio=profit_loss_ratio
+                        max_rate_t_l=rate_t_l
+                        max_rate_t_h=rate_t_h
+                    #print 'hight_terminate_rate=',rate_t_h
+                    #print 'low_terminate_rate=',rate_t_l
+                    #print 'then profit_loss_ratio=',profit_loss_ratio
+                else:
+                    pass
+            if max_profit_loss_ratio>0:
+                print 'max_rate_t_h=',max_rate_t_h
+                print 'max_rate_t_l=',max_rate_t_l
+                print 'max_profit_loss_ratio=',max_profit_loss_ratio
+    """
+    static_df_h.to_csv(ROOT_DIR+'/result_temp/h_change_static_%s.csv' % latest_day_str)
+    static_df_p.to_csv(ROOT_DIR+'/result_temp/p_change_static_%s.csv' % latest_day_str)
+    static_df_l.to_csv(ROOT_DIR+'/result_temp/l_change_static_%s.csv' % latest_day_str)
+    
+    close_change_df=static_df_p.describe()
+    high_change_df=static_df_h.describe()
+    low_change_df=static_df_l.describe()
+    close_change_df.to_csv(ROOT_DIR+'/result_temp/p_change_static_describe_%s.csv' % latest_day_str)
+    high_change_df.to_csv(ROOT_DIR+'/result_temp/h_change_static_describe_%s.csv' % latest_day_str)
+    low_change_df.to_csv(ROOT_DIR+'/result_temp/l_change_static_describe_%s.csv' % latest_day_str)
+    
+    return  static_df_p,static_df_h,static_df_l
 
 def back_test_atr():
     last_day_str=get_last_trade_day()

@@ -4,19 +4,18 @@ import numpy as np
 import functools
 
 df = pd.DataFrame({'AAA' : [4,5,6,7], 'BBB' : [10,30,20,40],'CCC' : [100,50,-30,-50]})
+print df.describe()
+print df[2:]
 df.index.values
+
+
+
+df.ix[df.AAA >= 5,'BBB'] = -1
+df.ix[df.AAA >= 5,['BBB','CCC']] = 555
 
 df.sort_index(axis=0, by='CCC', ascending=True)
 
 df= df.set_index("AAA")
-
-def get_df_length(df):
-    s=str(df)
-    l=s.split('\n')
-    return (len(l)-1)
-
-df.ix[df.AAA >= 5,'BBB'] = -1
-df.ix[df.AAA >= 5,['BBB','CCC']] = 555
 
 """to keep the 'true', and replace the 'false'"""
 df_mask = pd.DataFrame({'AAA' : [True] * 4, 'BBB' : [False] * 4,'CCC' : [True,False] * 2})
