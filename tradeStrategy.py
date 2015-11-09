@@ -758,7 +758,67 @@ class Stockhistory:
         temp_df['v_ma10'] = np.round(pd.rolling_mean(temp_df['volume'], window=10), 2)
         temp_df.insert(14, 'h_change', 100.00*((temp_df.high-temp_df.last_close)/temp_df.last_close).round(4))
         temp_df.insert(15, 'l_change', 100.00*((temp_df.low-temp_df.last_close)/temp_df.last_close).round(4))
+        temp_df['atr']=np.where(temp_df['high']-temp_df['low']<temp_df['high']-temp_df['close'].shift(1),temp_df['high']-temp_df['close'].shift(1),temp_df['high']-temp_df['low']) #temp_df['close'].shift(1)-temp_df['low'])
+        temp_df['atr']=np.where(temp_df['atr']<temp_df['close'].shift(1)-temp_df['low'],temp_df['close'].shift(1)-temp_df['low'],temp_df['atr'])
+        short_num=5
+        long_num=10
+        temp_df['atr_ma%s'%short_num] = np.round(pd.rolling_mean(temp_df['atr'], window=short_num), 2)
+        temp_df['atr_%s_rate'%short_num]=(temp_df['atr_ma%s'%short_num]/temp_df['atr']).round(2)
+        temp_df['atr_%s_max_r'%short_num]=np.round(pd.rolling_max(temp_df['atr_%s_rate'%short_num], window=short_num), 2)
+        temp_df['atr_ma%s'%long_num] = np.round(pd.rolling_mean(temp_df['atr'], window=long_num), 2)
+        temp_df['atr_%s_rate'%long_num]=(temp_df['atr_ma%s'%long_num]/temp_df['atr']).round(2)
+        temp_df['atr_%s_max_r'%long_num]=np.round(pd.rolling_max(temp_df['atr_%s_rate'%long_num], window=long_num), 2)
+        expect_rate=1.8
+        temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
+        temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
+        #temp_df.to_csv(ROOT_DIR+'/result_temp/temp_%s.csv' % self.code)
         return temp_df
+    
+    def _form_temp_df1(self):
+        
+        if len(self.h_df) <30:
+            return 0
+        df=self.h_df
+        close_c=df['close']
+        idx=close_c.index.values.tolist()
+        va=df['close'].values.tolist()
+        idx1=idx[1:]
+        first_idx=idx.pop(0)
+        va1=va[:-1]
+        last_close=Series(va1,index=idx1)
+        temp_df=df[1:]
+        temp_df.insert(4, 'last_close', last_close)
+        #temp_df.insert(7, 'p_change', 100.00*(temp_df.close-temp_df.last_close)/temp_df.last_close)
+        temp_df.insert(6, 'p_change', 100.00*((temp_df.close-temp_df.last_close)/temp_df.last_close).round(4))
+        
+        temp_df.is_copy=False
+        temp_df['ma5'] = np.round(pd.rolling_mean(temp_df['close'], window=5), 2)
+        temp_df['ma10'] = np.round(pd.rolling_mean(temp_df['close'], window=10), 2)
+        temp_df['ma20'] = np.round(pd.rolling_mean(temp_df['close'], window=20), 2)
+        temp_df['ma30'] = np.round(pd.rolling_mean(temp_df['close'], window=30), 2)
+        temp_df['ma60'] = np.round(pd.rolling_mean(temp_df['close'], window=60), 2)
+        temp_df['ma120'] = np.round(pd.rolling_mean(temp_df['close'], window=120), 2)
+        temp_df['v_ma5'] = np.round(pd.rolling_mean(temp_df['volume'], window=5), 2)
+        temp_df['v_ma10'] = np.round(pd.rolling_mean(temp_df['volume'], window=10), 2)
+        temp_df.insert(14, 'h_change', 100.00*((temp_df.high-temp_df.last_close)/temp_df.last_close).round(4))
+        temp_df.insert(15, 'l_change', 100.00*((temp_df.low-temp_df.last_close)/temp_df.last_close).round(4))
+        temp_df['atr']=np.where(temp_df['high']-temp_df['low']<temp_df['high']-temp_df['close'].shift(1),temp_df['high']-temp_df['close'].shift(1),temp_df['high']-temp_df['low']) #temp_df['close'].shift(1)-temp_df['low'])
+        temp_df['atr']=np.where(temp_df['atr']<temp_df['close'].shift(1)-temp_df['low'],temp_df['close'].shift(1)-temp_df['low'],temp_df['atr'])
+        short_num=5
+        long_num=10
+        temp_df['atr_ma%s'%short_num] = np.round(pd.rolling_mean(temp_df['atr'], window=short_num), 2)
+        temp_df['atr_%s_rate'%short_num]=(temp_df['atr_ma%s'%short_num]/temp_df['atr']).round(2)
+        temp_df['atr_%s_max_r'%short_num]=np.round(pd.rolling_max(temp_df['atr_%s_rate'%short_num], window=short_num), 2)
+        temp_df['atr_ma%s'%long_num] = np.round(pd.rolling_mean(temp_df['atr'], window=long_num), 2)
+        temp_df['atr_%s_rate'%long_num]=(temp_df['atr_ma%s'%long_num]/temp_df['atr']).round(2)
+        temp_df['atr_%s_max_r'%long_num]=np.round(pd.rolling_max(temp_df['atr_%s_rate'%long_num], window=long_num), 2)
+        expect_rate=1.8
+        temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
+        temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
+        #temp_df.to_csv(ROOT_DIR+'/result_temp/temp_%s.csv' % self.code)
+        atr_in_rate=temp_df.tail(1)['atr_in'].mean()
+        #print 'atr_in_rate=',atr_in_rate
+        return atr_in_rate
     
     def _form_temp_df0(self):
         df=self.h_df
@@ -1152,7 +1212,6 @@ class Stockhistory:
         
         #temp_df['atr']=max(temp_df['high']-temp_df['low'],temp_df['high']-temp_df['close'].shift(1), temp_df['close'].shift(1)-temp_df['low'])
         temp_df['atr']=np.where(temp_df['high']-temp_df['low']<temp_df['high']-temp_df['close'].shift(1),temp_df['high']-temp_df['close'].shift(1),temp_df['high']-temp_df['low']) #temp_df['close'].shift(1)-temp_df['low'])
-        
         temp_df['atr']=np.where(temp_df['atr']<temp_df['close'].shift(1)-temp_df['low'],temp_df['close'].shift(1)-temp_df['low'],temp_df['atr'])
         #temp_df['atr_rate']=(2.00*temp_df['atr']*100/(temp_df['high']+temp_df['low'])).round(0)
         temp_df['atr_rate']=(temp_df['atr']*100/temp_df['close'].shift(1)).round(0)
@@ -2919,6 +2978,54 @@ def change_static_market():
     low_change_df.to_csv(ROOT_DIR+'/result_temp/l_change_static_describe_%s.csv' % latest_day_str)
     
     return  static_df_p,static_df_h,static_df_l
+
+
+def mini_atr_market():
+    code='002678'
+    #code='000987'
+    #code='601018'
+    code='002466'
+    #code='600650'
+    #code='300244'
+    #code='000001'
+    #code='300033'
+    #code='000821'
+    short_num=20
+    long_num=55
+    dif_num=9
+    current_price=12.10
+    
+    init_rate=-2.5
+    rate_interval=0.5
+    range_num=18
+    rate_list=specify_rate_range(init_rate, rate_interval, range_num)
+    df_data={}
+    column_list=['code']
+    #gt_data['code']=code
+    for rate in rate_list:
+        column_name='gt_%s' % rate
+        column_list.append(column_name)
+    empty_df=pd.DataFrame(df_data,columns=column_list)#,index=[''])
+    #print 'static_df=',static_df
+    static_df_h=static_df_l=static_df_p=empty_df
+    today_df,this_time_str=get_today_df()
+    short_num=20
+    long_num=55
+    all_codes=today_df.index.values.tolist()
+    latest_break_20_list=[]
+    latest_break_55_list=[]
+    top5_average_sum=0.0
+    latest_day_str=get_latest_trade_day()
+    #print 'latest_day_str=',latest_day_str
+    atr_in_codes=[]
+    for code in all_codes:
+        stock=Stockhistory(code,'D')
+        atr_in_rate=stock._form_temp_df1()
+        if atr_in_rate:
+            atr_in_codes.append([code,atr_in_rate])
+
+    print 'atr_in_codes=',atr_in_codes
+    return  atr_in_codes
 
 def back_test_atr():
     last_day_str=get_last_trade_day()
