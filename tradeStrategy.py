@@ -16,6 +16,7 @@ import threading
 
 import smtplib
 from email.mime.text import MIMEText
+import code
 
 
 ISOTIMEFORMAT='%Y-%m-%d %X'
@@ -775,9 +776,9 @@ class Stockhistory:
         return temp_df
     
     def _form_temp_df1(self):
-        
+      
         if len(self.h_df) <30:
-            return 0
+            return 0,'',0,''
         df=self.h_df
         close_c=df['close']
         idx=close_c.index.values.tolist()
@@ -815,10 +816,15 @@ class Stockhistory:
         expect_rate=1.8
         temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
         temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
-        #temp_df.to_csv(ROOT_DIR+'/result_temp/temp_%s.csv' % self.code)
-        atr_in_rate=temp_df.tail(1)['atr_in'].mean()
+        temp_df.to_csv(ROOT_DIR+'/result_temp1/temp_%s.csv' % self.code)
+        atr_in_rate=round(temp_df.tail(1)['atr_in'].mean(),2)
+        last_date=temp_df.tail(1).iloc[0].date
+        #print type(last_date)
+        last2_df=temp_df.tail(2)
+        atr_in_rate_last=round(last2_df.head(1)['atr_in'].mean(),2)
+        last2_date=last2_df.head(1).iloc[0].date
         #print 'atr_in_rate=',atr_in_rate
-        return atr_in_rate
+        return atr_in_rate,last_date,atr_in_rate_last,last2_date
     
     def _form_temp_df0(self):
         df=self.h_df
@@ -3018,13 +3024,29 @@ def mini_atr_market():
     latest_day_str=get_latest_trade_day()
     #print 'latest_day_str=',latest_day_str
     atr_in_codes=[]
+    atr_in_codes_last=[]
+    df_data={}
+    column_list= ['code','atr_in_rate']
+    atr_min_df=pd.DataFrame(df_data,columns=column_list)
     for code in all_codes:
         stock=Stockhistory(code,'D')
-        atr_in_rate=stock._form_temp_df1()
+        atr_in_rate,last_date,atr_in_rate_last,last2_date=stock._form_temp_df1()
         if atr_in_rate:
+            df_data={}
+            df_data['code']=[str(code)]
+            df_data['atr_in_rate']=[atr_in_rate]
+            #code_df=pd.DataFrame(code_data,index=['code'],columns=result_column)
+            #result_df=result_df.append(code_df,ignore_index=True)
+            atr_df=pd.DataFrame(df_data,columns=column_list)
+            atr_min_df=atr_min_df.append(atr_df,ignore_index=True)
             atr_in_codes.append([code,atr_in_rate])
-
+        if atr_in_rate_last:
+            atr_in_codes_last.append([code,atr_in_rate_last])
+    atr_min_df=atr_min_df.sort_index(axis=0, by='atr_in_rate', ascending=False)
+    atr_min_df.to_csv(ROOT_DIR+'/result_temp1/mini_atr_market_%s.csv' % latest_day_str)
+    print atr_min_df
     print 'atr_in_codes=',atr_in_codes
+    print 'atr_in_codes_last=',atr_in_codes_last
     return  atr_in_codes
 
 def back_test_atr():

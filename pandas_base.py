@@ -4,6 +4,7 @@ import numpy as np
 import functools
 
 df = pd.DataFrame({'AAA' : [4,5,6,7], 'BBB' : [10,30,20,40],'CCC' : [100,50,-30,-50]})
+print df.ix[0].AAA
 print df.describe()
 print df[2:]
 df.index.values
