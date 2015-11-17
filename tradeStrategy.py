@@ -733,8 +733,8 @@ class Stockhistory:
     #form temp df with 'last_close' for calculating p_change    
     def _form_temp_df(self):
         
-        if len(self.h_df) ==0:
-            return self.h_df
+        if self.h_df.empty:
+            return False
         df=self.h_df
         close_c=df['close']
         idx=close_c.index.values.tolist()
@@ -946,6 +946,8 @@ class Stockhistory:
         
         #"""
         non_zero_df=temp_df[temp_df['operate']!=0]
+        if non_zero_df.empty:
+            return {}
         this_stratege_state= non_zero_df.tail(1).iloc[0].operate
         this_stratege_date= non_zero_df.tail(1).iloc[0].date
         #print this_stratege_date,this_stratege_state
