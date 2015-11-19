@@ -8,7 +8,7 @@ import tushare as ts
 import json
 import string
 
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import datetime
 from bs4 import BeautifulSoup
 
@@ -86,11 +86,11 @@ def write_hist_index():
     index_dir=ROOT_DIR+'/index/'
     file_type='csv'
     for index_str in index_list:
-        print 'Getting hist data for %s index ...' % index_str
+        print('Getting hist data for %s index ...' % index_str)
         file_name=index_dir+index_str+'.'+file_type
         index_df=ts.get_hist_data(index_str)
         index_df.to_csv(file_name)
-        print 'Getting hist data for %s index is completed' % index_str
+        print('Getting hist data for %s index is completed' % index_str)
     
     #print datetime.datetime.now()
 def get_hist_index(index_str):
@@ -188,12 +188,12 @@ def get_latest_trade_day(this_date=None):
 #to get the latest trade day
 def get_last_trade_day():
     latest_day_str=get_latest_trade_day()
-    print 'latest_day_str=',latest_day_str
+    print('latest_day_str=',latest_day_str)
     latest_datetime_str=latest_day_str+' 10:00:00'
     latest_datetime=datetime.datetime.strptime(latest_datetime_str,'%Y-%m-%d %X')
     last_datetime=latest_datetime+datetime.timedelta(days=-1)
     last_date_str=get_latest_trade_day(last_datetime)
-    print 'last_date_str=',last_date_str
+    print('last_date_str=',last_date_str)
     return last_date_str
 
 def is_trade_time(latest_trade_date):
@@ -388,7 +388,7 @@ def update_one_hist(code_sybol,today_df,today_df_update_time):
         if last_hist_date==today_str:
             hist_df=hist_df.head(len(hist_df)-1)
             #print 'update_one_hist1,hist_df1=',hist_df
-            print last_hist_date
+            print(last_hist_date)
         else:
             #print 'update_one_hist1, else2'
             pass
@@ -432,7 +432,7 @@ def update_one_hist(code_sybol,today_df,today_df_update_time):
     return hist_df
     
 def update_all_hist(today_df,today_df_update_time):
-    print 'Star update history stock data...'
+    print('Star update history stock data...')
     hist_all_code=get_all_code(ROOT_DIR+'/hist')
     #print 'update_all_hist:',hist_all_code
     all_codes=today_df.index.values.tolist()
@@ -440,8 +440,8 @@ def update_all_hist(today_df,today_df_update_time):
     latest_trade_date=get_latest_trade_day()
     #all_codes=['000001']
     #hist_all_code=['000001']
-    print 'update_all_hist,all_codes=', all_codes
-    print 'update_all_hist,hist_all_code=', hist_all_code
+    print('update_all_hist,all_codes=', all_codes)
+    print('update_all_hist,hist_all_code=', hist_all_code)
     for code_sybol in all_codes:
         
         if code_sybol in hist_all_code:
@@ -458,9 +458,9 @@ def update_all_hist(today_df,today_df_update_time):
             """
         else:
             #to get hist data update
-            print 'update_all_hist----else'
+            print('update_all_hist----else')
             pass
-    print 'Completed history stock data update!'
+    print('Completed history stock data update!')
     return
 
 #update all hist code from export
@@ -468,15 +468,15 @@ def init_all_hist_from_export():
     raw_hist_code=get_all_code(RAW_HIST_DIR)
     hist_code=get_all_code(HIST_DIR)
     except_code_list=list(set(raw_hist_code).difference(set(hist_code)))
-    print except_code_list 
-    print len(hist_code)
-    print len(raw_hist_code)
+    print(except_code_list) 
+    print(len(hist_code))
+    print(len(raw_hist_code))
     """update all hist data from export"""
     if len(hist_code)==0 or (len(hist_code)!=0 and len(hist_code)!=(len(raw_hist_code)-1)):
-        print 'Begin pre-processing  the hist data'
+        print('Begin pre-processing  the hist data')
         for code_sybol in raw_hist_code:
             get_raw_hist_df(code_sybol)
-        print 'pre-processing completed'
+        print('pre-processing completed')
     else:
         pass
     
@@ -528,8 +528,8 @@ def send_mail(alarm_list):
             s.login(mail_user,mail_pass)  
             s.sendmail(mail_user, mailto_list, msg.as_string())  
             s.close()  
-        except Exception, e:  
-            print str(e)
+        except Exception as e:  
+            print(str(e))
     else:
         pass
 
@@ -548,12 +548,12 @@ def get_interval(interval):
     if this_time>morning_time1 and this_time<noon_time0 :
         interval_time=noon_time0-this_time
         interval=interval_time.days*24*3600+interval_time.seconds
-        print 'Have a lest druing the noon, sleep %s seconds...'%interval
+        print('Have a lest druing the noon, sleep %s seconds...'%interval)
     else:
         if this_time<=morning_time0:
             interval_time=morning_time0-this_time
             interval=interval_time.days*24*3600+interval_time.seconds
-            print 'Market does not start yet in the morning, sleep %s seconds...'%interval
+            print('Market does not start yet in the morning, sleep %s seconds...'%interval)
         else:
             if this_time>=noon_time1:
                 interval_time=next_morning_time0-this_time
@@ -561,7 +561,7 @@ def get_interval(interval):
                 market_analyze_today()
                 #market_analyze_today()
                 write_hist_index()
-                print 'Market will start in next morning, sleep %s seconds...'%interval
+                print('Market will start in next morning, sleep %s seconds...'%interval)
             else:
                 if (this_time>=morning_time0 and this_time<=morning_time1)  or (this_time>=noon_time0 and this_time<=noon_time1):
                     interval=interval
@@ -639,7 +639,7 @@ def market_analyze_today():
     realtime_101_list,success_101_rate=market.get_101('realtime',code_10)
     sys.stdout=sys.__stdout__
     output.close()
-    print 'market_analyze completed for today.'
+    print('market_analyze completed for today.')
     
 class Stockhistory:
     def __init__(self,code_str,ktype):
@@ -895,19 +895,19 @@ class Stockhistory:
         if len(high_open_df)>0:
             hopen_hclose_df=high_open_df[high_open_df['close']>high_open_df['open']*(1+(trade_rate)*0.01)]
             hopen_hclose_rate=round(round(len(hopen_hclose_df),2)/len(high_open_df),2)
-            print 'hopen_hclose_rate_%s=%s' % (high_open_rate,hopen_hclose_rate)
+            print('hopen_hclose_rate_%s=%s' % (high_open_rate,hopen_hclose_rate))
             
             criteria_high_next=self.h_df['high'].shift(-1)>self.h_df['open'].shift(1)*(1+(trade_rate+high_open_rate)*0.01)
             hopen_next_high_df=self.h_df[criteria_high_open & criteria_high_next]
-            print len(hopen_next_high_df)
+            print(len(hopen_next_high_df))
             hopen_hnext_rate=round(round(len(hopen_next_high_df),2)/len(high_open_df),2)
-            print 'hopen_hnext_rate_%s=%s' % (high_open_rate,hopen_hnext_rate)
+            print('hopen_hnext_rate_%s=%s' % (high_open_rate,hopen_hnext_rate))
         
         low_open_df=self.h_df[self.h_df['open']<self.h_df['close'].shift(1)*(1-high_open_rate*0.01)]
         if len(low_open_df):
             lopen_lclose_df=low_open_df[low_open_df['close']<low_open_df['open']*(1+trade_rate*0.01)]
             lopen_lclose_rate=round(round(len(lopen_lclose_df),2)/len(low_open_df),2)
-            print 'lopen_lclose_rate_n%s=%s' %(high_open_rate,lopen_lclose_rate)
+            print('lopen_lclose_rate_n%s=%s' %(high_open_rate,lopen_lclose_rate))
        
         return
     
@@ -1036,17 +1036,17 @@ class Stockhistory:
         for analyze_type in analyze_types:
             analyze_list=df[analyze_type].values.tolist()
             boduan_list=find_boduan(analyze_list)
-            print '%s_boduan_list=%s' % (analyze_type,boduan_list[-20:])
+            print('%s_boduan_list=%s' % (analyze_type,boduan_list[-20:]))
             if len(boduan_list)>=3:
                 last_value0=boduan_list[-1]
                 last_value1=boduan_list[-2]
                 last_value2=boduan_list[-3]
                 if last_value0>last_value1:
-                    print 'The trade of %s is INREASING from %s to %s' % (analyze_type,last_value1,last_value0)
-                    print 'The upholding is %s , and the press is %s' % (last_value1,last_value2)
+                    print('The trade of %s is INREASING from %s to %s' % (analyze_type,last_value1,last_value0))
+                    print('The upholding is %s , and the press is %s' % (last_value1,last_value2))
                 else:
-                    print 'The trade of %s is DECREASING from %s to %s' % (analyze_type,last_value1,last_value0)
-                    print 'The upholding is %s , and the press is %s' % (last_value2,last_value1)
+                    print('The trade of %s is DECREASING from %s to %s' % (analyze_type,last_value1,last_value0))
+                    print('The upholding is %s , and the press is %s' % (last_value2,last_value1))
             else:
                 pass
         return
@@ -1077,8 +1077,8 @@ class Stockhistory:
         l_sell_2=round(current_price*(1+mean_l_2/100),2)
         l_sell_2=min(ma5,ma10,l_sell_2)
         
-        print 'buy_in gt ma5: ', buy_in>=ma5
-        print 'buy_in gt ma10: ', buy_in>=ma10
+        print('buy_in gt ma5: ', buy_in>=ma5)
+        print('buy_in gt ma10: ', buy_in>=ma10)
         worth_buy_in=buy_in>=ma5 and buy_in>=ma10
         
         price_data={'cur_prc':[current_price],'p_ma5':ma5,'p_ma10':ma10,'h_sell1':h_sell_1,'h_sell2':h_sell_2,'l_sell1':l_sell_1,'l_sell2':l_sell_2,'buy_in':buy_in,'worth_in':worth_buy_in}
@@ -1193,7 +1193,7 @@ class Stockhistory:
         value_n=value_list[ma_num-1] #df.ix[(ma_num-1)].column
         predict_ma=mean_value+(value_n*(1+mean_inrcs/100)-value_0)/ma_num
         predict_ma=round(predict_ma,2)
-        if self.DEBUG_ENABLED: print 'predict_ma%s=%s'%(ma_num,predict_ma)
+        if self.DEBUG_ENABLED: print('predict_ma%s=%s'%(ma_num,predict_ma))
         return predict_ma
     
     def get_realtime_ma(self,column,ma_num,current_price):
@@ -1206,7 +1206,7 @@ class Stockhistory:
         value_n=value_list[ma_num-1] #df.ix[(ma_num-1)].column
         predict_ma=mean_value+(current_price-value_0)/ma_num
         predict_ma=round(predict_ma,2)
-        if self.DEBUG_ENABLED: print 'predict_ma%s=%s'%(ma_num,predict_ma)
+        if self.DEBUG_ENABLED: print('predict_ma%s=%s'%(ma_num,predict_ma))
         return predict_ma
     
     def get_atr_df(self,short_num, long_num):
@@ -1264,7 +1264,7 @@ class Stockhistory:
         if df_55['date'].values.tolist():latest_break_55=df_55['date'].values.tolist()[-1]
         temp_df.to_csv(ROOT_DIR+'/result_temp/atr_%s.csv' % self.code)
         #print temp_df
-        print temp_df['atr_rate'].value_counts()
+        print(temp_df['atr_rate'].value_counts())
         atr_s= (temp_df['atr_rate'].value_counts()/temp_df['atr_rate'].count()).round(2)
         #print 'atr_static:'
         #print atr_s
@@ -1288,17 +1288,17 @@ class Stockhistory:
         short_num=12
         long_num=26
         dif_num=9
-        print temp_df
+        print(temp_df)
         temp_df.index.name=['idx']
         idx_list=temp_df.index.values.tolist()
         idx_df=pd.DataFrame({'idx':idx_list})
         idx_df=idx_df.astype(int)
-        print 'idx_df'
+        print('idx_df')
         #print idx_df
         #print (temp_df['idx'])
         temp_df['idx']=idx_df['idx']
         temp_df['idx'].astype(int)
-        print temp_df.dtypes
+        print(temp_df.dtypes)
         temp_df['s_ma'] = np.round(pd.rolling_mean(temp_df['close'], window=short_num), 2)
         #temp_df['s_ma_csum']=temp_df['close'].cumsum()
         temp_df['s_ma']=np.where(temp_df['idx']<short_num, np.round(temp_df['close'].cumsum()/(temp_df['idx']+1), 2), temp_df['s_ma']) 
@@ -1310,7 +1310,7 @@ class Stockhistory:
         #temp_df['dif'] =temp_df['s_ma']-temp_df['l_ma']
         temp_df['dif'] =idx_df['idx']-idx_df['idx']
         temp_df['maca']=idx_df['idx']-idx_df['idx']
-        print temp_df
+        print(temp_df)
         temp_df['dif'] = np.where(temp_df['idx']<1,temp_df['dif'],temp_df['s_ma'].shift(1)*(short_num-1)/(short_num+1)+temp_df['close']*2/(short_num+1)-temp_df['l_ma'].shift(1)*(long_num-1)/(long_num+1)-temp_df['close']*2/(long_num+1))
         temp_df['maca'] = np.round(pd.rolling_mean(temp_df['dif'], window=dif_num), 2)
         temp_df['maca'] = np.where(temp_df['idx']<dif_num, np.round(temp_df['dif'].cumsum()/(temp_df['idx']+1), 2), temp_df['maca'])
@@ -1320,7 +1320,7 @@ class Stockhistory:
         #temp_df['dea'] = np.round(pd.rolling_mean(temp_df['dif'], window=dif_num), 2)
         temp_df['bar']=idx_df['idx']-idx_df['idx']
         temp_df['bar']=np.where(temp_df['idx']<1,temp_df['bar'],(temp_df['dif']-temp_df['dea'])*2)
-        print temp_df
+        print(temp_df)
         temp_df.to_csv(ROOT_DIR+'/result/macd%s.csv'%self.code)
         return temp_df
     
@@ -1336,8 +1336,8 @@ class Stockhistory:
         dif_realtime=ema1-ema2
         dea_realtime=dea_last*(dif_num-1)/(dif_num+1)+dif_realtime*2/(dif_num+1)
         macd_realtime=2*(dif_realtime-dea_realtime)
-        print 'For last: dif=%s, dea=%s, bar=%s' % (dif_last,dea_last,macd_last) 
-        print 'Realtime: dif=%s, dea=%s, bar=%s' % (dif_realtime,dea_realtime,macd_realtime) 
+        print('For last: dif=%s, dea=%s, bar=%s' % (dif_last,dea_last,macd_last)) 
+        print('Realtime: dif=%s, dea=%s, bar=%s' % (dif_realtime,dea_realtime,macd_realtime)) 
         return dif_realtime,dea_realtime,macd_realtime
     
     def is_potential_cross_N(self,cross_num):
@@ -1353,15 +1353,15 @@ class Stockhistory:
         """
         rate=0.5
         ma5=self.get_predict_ma('close', 5,rate)
-        print 'ma5=', ma5
+        print('ma5=', ma5)
         ma10=self.get_predict_ma('close', 10,rate)
-        print 'ma10=',ma10
+        print('ma10=',ma10)
         ma20=self.get_predict_ma('close', 20,rate)
-        print 'ma20=',ma20
+        print('ma20=',ma20)
         ma30=self.get_predict_ma('close', 30,rate)
         ma60=self.get_predict_ma('close', 60,rate)
         current_price=ma5=self.get_ma('close', 1)#potential_df.iloc[0]['close']
-        print 'current_price=',current_price
+        print('current_price=',current_price)
         min_ma=0.0
         max_ma=0.0
         
@@ -1382,7 +1382,7 @@ class Stockhistory:
                         max_ma=max(ma5,ma10,ma20,ma30)
                     else:
                         pass
-        print 'min_ma=',min_ma
+        print('min_ma=',min_ma)
         is_potential=current_price<=min_ma and current_price*1.10>max_ma
         return is_potential
 
@@ -1433,7 +1433,7 @@ class Stockhistory:
 
     def is_101(self,potential):
         if len(self.h_df)<3:
-            print 'No enough history data for 101 verify!'
+            print('No enough history data for 101 verify!')
             return False
         df=self.h_df.tail(3)
         #print df
@@ -1486,7 +1486,7 @@ class Stockhistory:
         
     def is_10(self,potential):
         if len(self.h_df)<2:
-            print 'No enough history data for 101 verify!'
+            print('No enough history data for 101 verify!')
             return False
         df=self.h_df.tail(2)
         #print df
@@ -1570,25 +1570,25 @@ class Stockhistory:
     
     def get_next_df(self,raw_df,filter_df,next_num):
         filter_df_indexs=filter_df.index.values.tolist()
-        print filter_df_indexs
+        print(filter_df_indexs)
         next_df_indexs_new=[]
         for filter_df_index in filter_df_indexs:
             next_df_indexs_new.append(filter_df_index+next_num)
         
-        print next_df_indexs_new
+        print(next_df_indexs_new)
         
         next_df=raw_df[raw_df.index.isin(next_df_indexs_new)]
         next_df_p_change_mean=next_df['p_change'].mean()
-        print 'next_df_p_change_mean=',next_df_p_change_mean
+        print('next_df_p_change_mean=',next_df_p_change_mean)
         next_df_gt_0=next_df[next_df.p_change>0.2]
-        print len(filter_df)
-        print len(next_df_gt_0)
+        print(len(filter_df))
+        print(len(next_df_gt_0))
         filter_then_gt0_rate=round(round(len(next_df_gt_0),2)/len(filter_df),2)
-        print 'filter_then_next%s_gt0_rate=%s' % (next_num,filter_then_gt0_rate)
+        print('filter_then_next%s_gt0_rate=%s' % (next_num,filter_then_gt0_rate))
 
     def is_110(self,potential):
         if len(self.h_df)<3:
-            print 'No enough history data for 101 verify!'
+            print('No enough history data for 101 verify!')
             return False
         df=self.h_df.tail(3)
         #print df
@@ -1669,7 +1669,7 @@ class Stockhistory:
         realtime_mean_price=0
         if amount!=0:
             realtime_mean_price=round(round(amount,2)/volume,2)
-            print 'realtime_mean_price=',realtime_mean_price
+            print('realtime_mean_price=',realtime_mean_price)
         return realtime_mean_price
         
     def is_realtime_price_gte_mean(self,realtime_df):
@@ -1686,8 +1686,8 @@ class Stockhistory:
         else:
             this_realtime_lt_mean_stamp=get_timestamp(this_date_time)
             realtime_lt_mean_interval=this_realtime_lt_mean_stamp-self.realtime_stamp
-            print 'this_date_time=',this_date_time
-            print 'realtime_lt_mean_interval=',realtime_lt_mean_interval
+            print('this_date_time=',this_date_time)
+            print('realtime_lt_mean_interval=',realtime_lt_mean_interval)
         return realtime_lt_mean_interval
     
     def get_weak_sell_price(self,realtime_df,realtime_mean_price,permit_interval):
@@ -1698,20 +1698,20 @@ class Stockhistory:
         if realtime_weak_interval>=permit_interval:  #permit_interval>=60 seconds
             realtime_price=self.get_realtime_value(realtime_df, 'price')
             sell_pirce=realtime_price+0.382*(realtime_mean_price-realtime_price)
-            print 'realtime_lt_mean_interval=%s, which is great than permit_interval=%s'%(realtime_weak_interval,permit_interval)
-            print 'set sell_pirce=%s , and realtime_mean_price=%s'%(sell_pirce,realtime_mean_price)
+            print('realtime_lt_mean_interval=%s, which is great than permit_interval=%s'%(realtime_weak_interval,permit_interval))
+            print('set sell_pirce=%s , and realtime_mean_price=%s'%(sell_pirce,realtime_mean_price))
         return sell_pirce
     
     def email_trigger(self,alarm_list):
         if alarm_list:
             alarm_category=alarm_list[3]
-            print self.alarm_category,alarm_category
+            print(self.alarm_category,alarm_category)
             if self.alarm_category==alarm_category:     # alarm_category does not change
                 alarm_list=[]
             else:
                 self.alarm_category=alarm_category
                 send_mail(alarm_list)
-                if self.DEBUG_ENABLED: print 'alarm_list=',alarm_list
+                if self.DEBUG_ENABLED: print('alarm_list=',alarm_list)
         else:
             alarm_list=[]
         return alarm_list
@@ -1721,7 +1721,7 @@ class Stockhistory:
         if current_price<ma*0.99:
             alarm_content='Down through ma_%s: %s, sell 1/3.' % (ma_num,ma)
             alarm_content=alarm_content
-            if self.DEBUG_ENABLED: print alarm_content
+            if self.DEBUG_ENABLED: print(alarm_content)
             alarm_type='alert'
             alarm_category='lt_ma'
             alarm_list=[self.code,this_date_time,alarm_type,alarm_category,alarm_content]
@@ -1763,16 +1763,16 @@ class Stockhistory:
         this_time= realtime_df.ix[0].time
         this_date_time=get_latest_trade_day()+' '+this_time
         this_timestamp=get_timestamp(this_date_time)
-        print '%s  %s---------------------------------------------------------'% (self.code,this_date_time)
+        print('%s  %s---------------------------------------------------------'% (self.code,this_date_time))
         #print this_timestamp
         hist_high_rate=self.get_average_high(60)
         hist_low_rate=self.get_average_low(60)
         expect_profile_rate=hist_high_rate
         terminate_loss_rate=hist_low_rate
-        print 'expect_profile_rate=',expect_profile_rate
-        print 'terminate_loss_rate=',terminate_loss_rate
+        print('expect_profile_rate=',expect_profile_rate)
+        print('terminate_loss_rate=',terminate_loss_rate)
         drop_down_rate=min(-1.5,0.33*terminate_loss_rate)
-        print 'drop_down_rate=',drop_down_rate
+        print('drop_down_rate=',drop_down_rate)
         hold_time=60*5
         #state_confirm=False
         average_inrcs=1.0
@@ -1792,7 +1792,7 @@ class Stockhistory:
         if weak_sell_price>0:
             alarm_content='weak_sell_price= %s. '% weak_sell_price
             alarm_content=alarm_content+current_content
-            if self.DEBUG_ENABLED: print alarm_content
+            if self.DEBUG_ENABLED: print(alarm_content)
             alarm_type='alarm'
             alarm_category='lt_day_mean'
             alarm_list=[stock_code,this_date_time,alarm_type,alarm_category,alarm_content]
@@ -1804,7 +1804,7 @@ class Stockhistory:
             if self.max_price!=-1: 
                 alarm_content='New topest price: %s. '% high_price
                 alarm_content=alarm_content+current_content
-                if self.DEBUG_ENABLED: print alarm_content
+                if self.DEBUG_ENABLED: print(alarm_content)
                 alarm_type='notice'
                 alarm_category='new_highest'
                 alarm_list=[stock_code,this_date_time,alarm_type,alarm_category,alarm_content]
@@ -1819,7 +1819,7 @@ class Stockhistory:
             if self.min_price!=1000:
                 alarm_content='New lowest price: %s. '%low_price
                 alarm_content=alarm_content+current_content
-                if self.DEBUG_ENABLED: print alarm_content
+                if self.DEBUG_ENABLED: print(alarm_content)
                 alarm_type='notice'
                 alarm_category='new_lowest'
                 alarm_list=[stock_code,this_date_time,alarm_type,alarm_category,alarm_content]
@@ -1831,7 +1831,7 @@ class Stockhistory:
         if current_price<self.max_price*(1+drop_down_rate/100):
             alarm_content='Descreasing more than %s%% from highest rate %s%% , sell 1/3.' % (drop_down_rate,high_change)
             alarm_content=alarm_content+current_content
-            if self.DEBUG_ENABLED: print alarm_content
+            if self.DEBUG_ENABLED: print(alarm_content)
             alarm_type='alarm'
             alarm_category='high_then_down'
             alarm_list=[stock_code,this_date_time,alarm_type,alarm_category,alarm_content]
@@ -1841,24 +1841,24 @@ class Stockhistory:
         
         if current_price>=(1+expect_profile_rate)*pre_close_price:
             if self.alarm_trigger_timestamp==0:
-                print 'Firstly meet expectation, prepare to sell'
+                print('Firstly meet expectation, prepare to sell')
                 self.alarm_trigger_timestamp=this_time
                 alarm_content='Firstly meet expectation rate: %s%%, prepare to sell. ' % expect_profile_rate
                 alarm_content=alarm_content+current_content
-                if self.DEBUG_ENABLED: print alarm_content
+                if self.DEBUG_ENABLED: print(alarm_content)
                 alarm_type='notice'
                 alarm_category='meet_expect'
                 alarm_list=[stock_code,this_date_time,alarm_type,alarm_category,alarm_content]
                 alarm_list=self.email_trigger( alarm_list)
             else:
-                print 'Meet expectation and waiting confirmation...'
+                print('Meet expectation and waiting confirmation...')
                 interval=this_timestamp-self.alarm_trigger_timestamp
                 if interval>60*5:
-                    print 'Meet expectation and confirmed, sell now'
+                    print('Meet expectation and confirmed, sell now')
                     self.alarm_trigger_timestamp=0
                     alarm_content='Meet expectation rate %s%% and confirmed, sell 1/3. ' % expect_profile_rate
                     alarm_content=alarm_content+current_content
-                    if self.DEBUG_ENABLED: print alarm_content
+                    if self.DEBUG_ENABLED: print(alarm_content)
                     alarm_type='alarm'
                     alarm_category='confirm_expect'
                     alarm_list=[stock_code,this_date_time,alarm_type,alarm_category,alarm_content]
@@ -1867,7 +1867,7 @@ class Stockhistory:
             if current_price>(1+exceed_high_rate)*pre_close_price:
                 alarm_content='Exactly exceed 1.5x expectation rate %s%% and confirmed, sell 1/2.' % exceed_high_rate 
                 alarm_content=alarm_content+current_content
-                if self.DEBUG_ENABLED: print alarm_content
+                if self.DEBUG_ENABLED: print(alarm_content)
                 alarm_type='alert'
                 alarm_category='exceed_high'
                 alarm_list=[stock_code,this_date_time,alarm_type,alarm_category,alarm_content]
@@ -1876,12 +1876,12 @@ class Stockhistory:
         else:
             if current_price<(1+terminate_loss_rate)*pre_close_price:
                 if self.alarm_trigger_timestamp==0:
-                    print 'Firstly reach loss termination, prepare to sell. '
+                    print('Firstly reach loss termination, prepare to sell. ')
                     
                     self.alarm_trigger_timestamp=this_time
                     alarm_content='Firstly reach lost termination rate: %s%%, prepare to sell' % terminate_loss_rate
                     alarm_content=alarm_content+current_content
-                    if self.DEBUG_ENABLED: print alarm_content
+                    if self.DEBUG_ENABLED: print(alarm_content)
                     alarm_type='notice'
                     alarm_category='reach_lost'
                     alarm_list=[stock_code,this_date_time,alarm_type,alarm_category,alarm_content]
@@ -1890,11 +1890,11 @@ class Stockhistory:
                 else:
                     interval=this_timestamp-self.alarm_trigger_timestamp
                     if interval>60*3:
-                        print 'Reach lost termination and confirmed, sell now.'
+                        print('Reach lost termination and confirmed, sell now.')
                         self.alarm_trigger_timestamp=0
                         alarm_content='Reach lost termination rate %s%% and confirmed, sell 1/2. ' % terminate_loss_rate
                         alarm_content=alarm_content+current_content
-                        if self.DEBUG_ENABLED: print alarm_content
+                        if self.DEBUG_ENABLED: print(alarm_content)
                         alarm_type='alarm'
                         alarm_category='confirm_lost'
                         alarm_list=[stock_code,this_date_time,alarm_type,alarm_category,alarm_content]
@@ -1903,13 +1903,13 @@ class Stockhistory:
                 if current_price<(1+exceed_low_rate)*pre_close_price:
                     alarm_content='Exactly exceed 1.5x loss termination rate %s%% and confirmed, sell all. ' % exceed_low_rate
                     alarm_content=alarm_content+current_content
-                    if self.DEBUG_ENABLED: print alarm_content
+                    if self.DEBUG_ENABLED: print(alarm_content)
                     alarm_type='alert'
                     alarm_category='exceed_lost'
                     alarm_list=[stock_code,this_date_time,alarm_type,alarm_category,alarm_content]
                     alarm_list=self.email_trigger( alarm_list)
             else:
-                print 'Wave in normal, the current price is %s , perchange is %s%%.' % (current_price,per_change)
+                print('Wave in normal, the current price is %s , perchange is %s%%.' % (current_price,per_change))
                 pass
         
         return alarm_list #alarm_trigger_timestamp
@@ -2002,7 +2002,7 @@ class Market:
         #up_and_down_df=today_df[today_df.changepercent<today_df.h_change*0.5]
         up_and_down_df=today_df[criteria]
         #print up_and_down_df
-        print len(up_and_down_df)
+        print(len(up_and_down_df))
     
     def get_h_open_then_down(self,h_open_rate):
         h_open_rate=3.0
@@ -2013,7 +2013,7 @@ class Market:
         #up_and_down_df=today_df[today_df.changepercent<today_df.h_change*0.5]
         up_and_down_df=today_df[criteria]
         #print up_and_down_df
-        print len(up_and_down_df)
+        print(len(up_and_down_df))
     
     def get_split_num(self,split_rate):
         num_list=[]   #[close>=split_late, close<-split_late,high>=split_rate,high<split_rate]
@@ -2042,7 +2042,7 @@ class Market:
         #this_time=datetime.datetime.now()
         #this_time_str=this_time.strftime('%Y-%m-%d %X')
         this_time_str=self.today_df.index.name
-        print this_time_str
+        print(this_time_str)
         len_today_df=len(self.today_df)
         #self.get_h_open_then_down(h_open_rate=3.0)
         upper_limit_df,upper_limit_rate=self.get_today_upper_limit()
@@ -2069,8 +2069,8 @@ class Market:
         static_data['h_lmt']=num_h_lmt
         static_data['l_lmt']=num_l_lmt
         
-        print 'Now time: %s' % datetime.datetime.now()
-        print '-----------------------------------------------------------------'
+        print('Now time: %s' % datetime.datetime.now())
+        print('-----------------------------------------------------------------')
         #print 'num_upper_limit:num_lower_limit=%s:%s' %(len(upper_limit_df),len(lower_limit_df))
         #print 'upper_limit_rate=%s%%,lower_limit_rate=%s%%' %(upper_limit_rate,lower_limit_rate)
         #print '-----------------------------------------------------------------'
@@ -2088,7 +2088,7 @@ class Market:
         R_F_G=''
         if min_x!=0:
             R_F_G='%s:%s:%s'%(num_R/min_x,num_G/min_x,num_F/min_x)
-        print 'R:G:F=%s' % R_F_G
+        print('R:G:F=%s' % R_F_G)
         num_list1,rate_list1=self.get_split_num(middle_increase_rate)
         num_list2,rate_list2=self.get_split_num(great_increase_rate)
         """
@@ -2128,7 +2128,7 @@ class Market:
         static_data[kw_str]=keep_weak_rate
         static_result_df=pd.DataFrame(static_data,columns=static_column_list)#,index='aa')
         static_result_df=static_result_df.set_index('time')
-        print static_result_df #.columns.values.tolist()
+        print(static_result_df) #.columns.values.tolist()
         return static_result_df
     
     def get_allcode_list(self):
@@ -2152,7 +2152,7 @@ class Market:
                 else:
                     #new stock
                     pass
-            print 'potential_cross_%s_list= %s' % (cross_num,potential_cross_n_list)
+            print('potential_cross_%s_list= %s' % (cross_num,potential_cross_n_list))
         
         else:
             pass
@@ -2179,13 +2179,13 @@ class Market:
                 else:
                     #new stock
                     pass
-            print 'potential_cross_%s_list= %s' % (cross_num,potential_cross_n_list)
-            print 'actual_cross_%s_list= %s' % (cross_num,actual_cross_n_list)
+            print('potential_cross_%s_list= %s' % (cross_num,potential_cross_n_list))
+            print('actual_cross_%s_list= %s' % (cross_num,actual_cross_n_list))
             if len(potential_cross_n_list):
                 success_rate=round(round(len(actual_cross_n_list),2)/len(potential_cross_n_list),2)
         else:
             pass
-        print 'success_rate=',success_rate
+        print('success_rate=',success_rate)
         return actual_cross_n_list,success_rate
     
     def get_star_df(self, star_rate,raw_df=None):
@@ -2232,13 +2232,13 @@ class Market:
                         potential_10_list.append(code)
                     if stockhist.is_10('actual'):
                         actual_10_list.append(code)
-            print 'potentia_10_list= %s' % (potential_10_list)
-            print 'actual_10_list= %s' % (actual_10_list)
+            print('potentia_10_list= %s' % (potential_10_list))
+            print('actual_10_list= %s' % (actual_10_list))
             if len(potential_10_list):
                 success_rate=round(round(len(actual_10_list),2)/len(potential_10_list),2)
         else:
             pass
-        print 'success_rate=',success_rate
+        print('success_rate=',success_rate)
         return actual_10_list,success_rate
     
     def get_101(self,analyze_type,code_list=None):
@@ -2262,13 +2262,13 @@ class Market:
                         potential_101_list.append(code)
                     if stockhist.is_101('actual'):
                         actual_101_list.append(code)
-            print 'potential_101_list= %s' % (potential_101_list)
-            print 'actual_101_list= %s' % (actual_101_list)
+            print('potential_101_list= %s' % (potential_101_list))
+            print('actual_101_list= %s' % (actual_101_list))
             if len(potential_101_list):
                 success_rate=round(round(len(actual_101_list),2)/len(potential_101_list),2)
         else:
             pass
-        print 'success_rate=',success_rate
+        print('success_rate=',success_rate)
         return actual_101_list,success_rate
 
     def get_110(self):
@@ -2285,13 +2285,13 @@ class Market:
                         potential_110_list.append(code)
                     if stockhist.is_110('actual'):
                         actual_110_list.append(code)
-            print 'potential_110_list= %s' % (potential_110_list)
-            print 'actual_110_list= %s' % (actual_110_list)
+            print('potential_110_list= %s' % (potential_110_list))
+            print('actual_110_list= %s' % (actual_110_list))
             if len(potential_110_list):
                 success_rate=round(round(len(actual_110_list),2)/len(potential_110_list),2)
         else:
             pass
-        print 'success_rate=',success_rate
+        print('success_rate=',success_rate)
         return actual_110_list,success_rate
     
     def get_positive_target(self,target_list):
@@ -2316,17 +2316,17 @@ class Market:
         if target_count!=0:
             postive_rate=round(round(postive_count,2)/target_count,2)
             total_avrg=round(total_avrg/target_count,2)
-        print 'postive_rate_2nd_day=',postive_rate
-        print 'postive_avrg_incrs=',postive_avrg_incrs
-        print 'total_avrg=',total_avrg
+        print('postive_rate_2nd_day=',postive_rate)
+        print('postive_avrg_incrs=',postive_avrg_incrs)
+        print('total_avrg=',total_avrg)
         return total_avrg,postive_rate
     
     def get_hist_cross_analyze(self):
         latest_trade_day=get_latest_trade_day()
         N=4
         for N in range(1,N):
-            print '============================='
-            print 'History statistics analyze for actual_cross_%s_list  on  %s' %(N,latest_trade_day)
+            print('=============================')
+            print('History statistics analyze for actual_cross_%s_list  on  %s' %(N,latest_trade_day))
             actual_cross_n_list,success_rate=self.get_cross_N(N,'history')
             total_avrg,postive_rate=self.get_positive_target(actual_cross_n_list)
         return
@@ -2335,8 +2335,8 @@ class Market:
         latest_trade_day=get_latest_trade_day()
         N=4
         for n in range(1,N):
-            print '============================='
-            print 'Realtime statistics analyze for actual_cross_%s_list  on  %s' %(n,latest_trade_day)
+            print('=============================')
+            print('Realtime statistics analyze for actual_cross_%s_list  on  %s' %(n,latest_trade_day))
             actual_cross_n_list,success_rate=self.get_cross_N(n,'realtime')
         return
     
@@ -2372,7 +2372,7 @@ class Market:
         realtime_101_list,success_101_rate=self.get_101('realtime',code_10)
         sys.stdout=sys.__stdout__
         output.close()
-        print 'market_analyze completed for today.'
+        print('market_analyze completed for today.')
     
 class Monitor:
     
@@ -2393,16 +2393,16 @@ class Monitor:
         #code_list=['600031','603988','603158','601018','002282','002556','600673','002678','000998','601088','600398']
         code_list=self.holding_stocks
         for code in code_list:
-            print '---------------------------------------------------'
+            print('---------------------------------------------------')
             stock=Stockhistory(code,'D')
-            print 'code:', code
+            print('code:', code)
             stock.hist_analyze(10)
             stock.ma_analyze()
-            print '---------------------------------------------------'
+            print('---------------------------------------------------')
         
         sys.stdout=sys.__stdout__
         static_output.close()
-        print 'Stock static completed'
+        print('Stock static completed')
         
     def realtime_monitor(self,given_interval):
         interval=60     #30 seconds
@@ -2433,12 +2433,12 @@ class Monitor:
             if this_time>morning_time1 and this_time<noon_time0 :
                 interval_time=noon_time0-this_time
                 interval=interval_time.days*24*3600+interval_time.seconds
-                print 'Have a lest druing the noon, sleep %s seconds...'%interval
+                print('Have a lest druing the noon, sleep %s seconds...'%interval)
             else:
                 if this_time<=morning_time0:
                     interval_time=morning_time0-this_time
                     interval=interval_time.days*24*3600+interval_time.seconds
-                    print 'Market does not start yet in the morning, sleep %s seconds...'%interval
+                    print('Market does not start yet in the morning, sleep %s seconds...'%interval)
                 else:
                     if this_time>=noon_time1:
                         interval_time=next_morning_time0-this_time
@@ -2447,7 +2447,7 @@ class Monitor:
                         #market_analyze_today()
                         write_hist_index()
                         self.get_holding_statics()
-                        print 'Market will start in next morning, sleep %s seconds...'%interval
+                        print('Market will start in next morning, sleep %s seconds...'%interval)
                     else:
                         if (this_time>=morning_time0 and this_time<=morning_time1)  or (this_time>=noon_time0 and this_time<=noon_time1):
                             latest_trade_day=get_latest_trade_day()
@@ -2530,9 +2530,9 @@ class Monitorthread(threading.Thread):
                         if self.thread_type=='hist_update':
                             pass
                         else:
-                            print 'Thread_type incorrect! Make sure your input is corret!'
+                            print('Thread_type incorrect! Make sure your input is corret!')
                     
-            print 'Thread Object(%d), Time:%s\n' %(self.thread_num, time.ctime())  
+            print('Thread Object(%d), Time:%s\n' %(self.thread_num, time.ctime()))  
             time.sleep(self.interval)  
             
     def stop(self):  
@@ -2550,29 +2550,29 @@ def thread_test():
 def test():
     hist_dir=ROOT_DIR+'/hist'
     hist_code=get_all_code(hist_dir)
-    print 'hist_code:',hist_code
+    print('hist_code:',hist_code)
     if len(hist_code)==0:
-        print 'Begin pre-processing  the hist data'
+        print('Begin pre-processing  the hist data')
         init_all_hist_from_export()
-        print 'pre-processing completed'
+        print('pre-processing completed')
         hist_code=get_all_code(hist_dir)
     code_str=hist_code[5]
     stock=Stockhistory(code_str='000157',ktype='D')
     #print 'Stockhistory:',stock.h_df
     topest_df,topest_rate= stock.get_hist_topest(recent_days=60)
-    print topest_df
-    print 'topest_rate=',topest_rate
+    print(topest_df)
+    print('topest_rate=',topest_rate)
     filter_df,filter_rate=stock.filter_hist('gte', 2, 100)
-    print filter_df
-    print 'filter_rate=',filter_rate
+    print(filter_df)
+    print('filter_rate=',filter_rate)
     ma5=stock.get_ma('close', 5)
-    print ma5
+    print(ma5)
     ma5_high=stock.get_ma('high', 5)
-    print ma5_high
+    print(ma5_high)
     ma5_volume=stock.get_ma('volume', 5)
-    print ma5_volume
+    print(ma5_volume)
     
-    print stock.is_cross_N(1,'actual')
+    print(stock.is_cross_N(1,'actual'))
     
     #market=Market()    
     #print market.today_df
@@ -2604,7 +2604,7 @@ def test1():
     actual_101_list,success_101_rate=market.get_101('history')
     t_df=market.today_df
     df_101=t_df[t_df.index.isin(actual_101_list)]
-    print 'df_101:',df_101
+    print('df_101:',df_101)
     """
     actual_cross_n_list,success_rate=market.get_cross_N(1, 'history')
     intersect_list=list(set(actual_cross_n_list).intersection(set(actual_101_list)))
@@ -2615,7 +2615,7 @@ def test1():
 def update_test():
     file_name=ROOT_DIR+'/data/all2015-07-17.csv'
     file_time_str=get_file_timestamp(file_name)
-    print file_time_str
+    print(file_time_str)
     today_df,today_df_update_time=get_today_df()
     update_all_hist(today_df,today_df_update_time)
     
@@ -2652,13 +2652,13 @@ def test2():
     realtime_101_list,success_101_rate=market.get_101('realtime',code_10)
     sys.stdout=sys.__stdout__
     output.close()
-    print 'test2 completed'
+    print('test2 completed')
     
 def test3():
     potential_101_list= ['000043', '000404', '000407', '000525', '000585', '000693', '000751', '000757', '000759', '000838', '000923', '002032', '002054', '002056', '002084', '002089', '002105', '002150', '002287', '002432', '002460', '002478', '002606', '002654', '002692', '002749', '300003', '300030', '300063', '300103', '300116', '300152', '300183', '300187', '300199', '300207', '300218', '300411', '600097', '600101', '600128', '600187', '600279', '600368', '600476', '600508', '600612', '600794', '600830', '600960', '600969', '600983', '601001', '601107', '601179', '601801', '601808', '601818', '601958', '603003', '603399']
     actual_101_list= ['000043', '000404', '000525', '000585', '000693', '000751', '000759', '000838', '002056', '002084', '002089', '002287', '002432', '002460', '002478', '002606', '002692', '300103', '300199', '300207', '300411', '600097', '600101', '600128', '600187', '600368', '600476', '600508', '600612', '600794', '600830', '600969', '600983', '601001', '601179', '601808', '601818', '601958', '603003', '603399']
     diffence_list=list(set(potential_101_list).difference(set(actual_101_list)))
-    print diffence_list
+    print(diffence_list)
     
     union_list=list(set(potential_101_list).union(actual_101_list))
     
@@ -2666,29 +2666,29 @@ def test3():
     potential_cross_1_list=['600307', '600586', '002128', '002232', '000662', '600248', '600508', '000933', '000065', '600792', '300028', '600584', '300244', '600546', '600612', '600983', '002003', '002089', '002460', '002709', '300207', '300411', '000983', '000693', '000043', '600097', '600123', '600432', '000759', '000899', '601777', '600348', '000761', '600429', '002466', '600187', '000878', '600121', '300007', '601898', '000514', '600857', '603399', '601666', '000582', '002033', '600818', '603611', '601958', '600509', '600638', '600768', '000552', '601699', '601016', '600172', '600196', '603333', '600202', '002749', '300041', '600809', '600022', '600748', '002418', '002320', '600106', '600740', '300157', '000571', '300378', '601288', '000005', '002646', '002298', '600072', '002279', '000546', '300069', '300053', '002366', '002112', '600112', '600249', '300032', '000913', '002322', '002659', '300016', '601126', '300166', '300337', '300052', '603123', '002513', '300375', '300217', '600706', '002343', '300328', '300340', '002751', '002611', '300261', '300144', '002361', '300051', '300165']
     
     intersect_list=list(set(actual_cross_1_list).intersection(set(actual_101_list)))
-    print 'intersect_list=',intersect_list
-    print len(intersect_list)
+    print('intersect_list=',intersect_list)
+    print(len(intersect_list))
     
     potential_intersect_list=list(set(potential_cross_1_list).intersection(set(potential_101_list)))
-    print 'potential_intersect_list=',potential_intersect_list
-    print len(potential_intersect_list)
+    print('potential_intersect_list=',potential_intersect_list)
+    print(len(potential_intersect_list))
 
 def test4():
-    print get_latest_trade_day()
+    print(get_latest_trade_day())
     market=Market()
     star_rate=0.25
     star_df=market.get_star_df(star_rate)
-    print star_df
+    print(star_df)
     star_list=star_df.index.values.tolist()
     code_10,rate=market.get_10('realtime', star_list)
-    print code_10
+    print(code_10)
     t_df=market.today_df
     df_10=t_df[t_df.index.isin(code_10)]
-    print df_10
+    print(df_10)
     df_10.to_csv(ROOT_DIR+'/data/is10-2015-06-04.csv')
     potential_101_list=code_10
     potential_101_list= ['002579', '002243', '002117', '000970', '600654', '000533', '600377', '300080', '600382', '600423', '600208', '601188', '002338', '002237', '002234', '000666', '600858', '601678', '300104', '002487', '600581', '600580', '002242', '600616', '600618', '002412', '002148', '600320', '000409', '600978', '600405', '600819', '600816', '002201', '002207', '002562', '000637', '601390', '000593', '600094', '600146', '600668', '000785', '601718', '300018', '002585', '600449', '600565', '600219', '300342', '600282', '002323', '002328', '300347', '600825', '000673', '601100', '300115', '002551', '002490', '002495', '002392', '600741', '600621', '002597', '002073', '000004', '600133', '601339', '000419', '000555', '600570', '603100', '600419', '000955', '000952', '000789', '300155', '002213', '601999', '600707', '600680', '600686', '600159', '601002', '002668', '002503', '600052', '002006', '002501', '600513', '600222', '600225', '300349', '600350', '300291', '600358', '600292', '000888', '601116', '300122', '300125', '601800', '002387', '002386', '002389', '002263', '601231', '600633', '601600', '002042', '600495', '002169', '600499', '600643', '600640', '600308', '000548', '300317', '300314', '300091', '600396', '000726', '000729', '002227', '603166', '603167', '600393', '600636', '002121', '002125', '600695', '002087', '603008', '600169', '000509', '000501', '601519', '601518', '002409', '600360', '000698', '600506', '600332', '600330', '002103', '002651', '300286', '002083', '603001', '000897', '600802']
-    print 'potential_101_list=',potential_101_list
+    print('potential_101_list=',potential_101_list)
     realtime_101_list,success_101_rate=market.get_101('realtime',potential_101_list)
 
 
@@ -2707,16 +2707,16 @@ def stock_test():
     sys.stdout=output
     code_list=['600031','603988','603158','601018','002282','002556','600673','002678','000998','601088','600398']
     for code in code_list:
-        print '---------------------------------------------------'
+        print('---------------------------------------------------')
         stock=Stockhistory(code,'D')
-        print 'code:', code
+        print('code:', code)
         stock.hist_analyze(10)
         stock.ma_analyze()
-        print '---------------------------------------------------'
+        print('---------------------------------------------------')
     
     sys.stdout=sys.__stdout__
     output.close()
-    print 'Stock static completed'
+    print('Stock static completed')
     
 def stock_test1():
         code='002678'
@@ -2731,14 +2731,14 @@ def stock_test1():
         #df=filter_df_by_date(raw_df=df, from_date_str='2015-06-19', to_date_str='2015-07-08')
         df=filter_df_by_date(raw_df=temp_df, from_date_str='2015-07-09', to_date_str='2015-08-18')
         #print df
-        print len(df)
+        print(len(df))
         h_change_mean=df['h_change'].mean()
-        print h_change_mean
+        print(h_change_mean)
         l_change_mean=df['l_change'].mean()
-        print l_change_mean
+        print(l_change_mean)
         df=df[df.h_change>0.5*h_change_mean]
         #df=df[df.l_change<-6.2]
-        print len(df)
+        print(len(df))
         #stock.set_hist_df_by_date(from_date_str='2015-05-08', to_date_str='2015-06-18')
         #stock.set_hist_df_by_date(from_date_str='2015-06-19', to_date_str='2015-07-08')
         #stock.set_hist_df_by_date(from_date_str='2015-07-09', to_date_str='2015-08-18')
@@ -2831,17 +2831,17 @@ def score_market():
     
     result_df.to_csv(ROOT_DIR+'/result/score_%s.csv' % this_time_str[:10])
     if stronge_ma_3_list:
-        print 'stronge_ma5_list=',stronge_ma_3_list
+        print('stronge_ma5_list=',stronge_ma_3_list)
         stronge_ma5_df=today_df[today_df.index.isin(stronge_ma_3_list)]
-        print stronge_ma5_df
-    print 'result_df:'
+        print(stronge_ma5_df)
+    print('result_df:')
     result_df=result_df.sort_index(axis=0, by='oper3', ascending=False)
-    print result_df
+    print(result_df)
     
     result_df_score_gt0=result_df[result_df['score']>=0]
-    print result_df_score_gt0
+    print(result_df_score_gt0)
     result_df_oper3_gt1=result_df[result_df['oper3']>=1]
-    print result_df_oper3_gt1
+    print(result_df_oper3_gt1)
     
 def atr_market():
     today_df,this_time_str=get_today_df()
@@ -2857,7 +2857,7 @@ def atr_market():
     latest_break_55_list=[]
     top5_average_sum=0.0
     latest_day_str=get_latest_trade_day()
-    print 'latest_day_str=',latest_day_str
+    print('latest_day_str=',latest_day_str)
     if all_codes and latest_day_str:
         for code_str in all_codes:
             stock=Stockhistory(code_str,'D')
@@ -2871,9 +2871,9 @@ def atr_market():
             
             top5_average_sum+=top5_average
         top5_average_all_market=round(top5_average_sum/len(all_codes))
-    print 'latest_break_20_list=',latest_break_20_list
-    print 'latest_break_55_list=',latest_break_55_list
-    print 'top5_average_all_market=',top5_average_all_market
+    print('latest_break_20_list=',latest_break_20_list)
+    print('latest_break_55_list=',latest_break_55_list)
+    print('top5_average_all_market=',top5_average_all_market)
     latest_break_20_df=today_df[today_df.index.isin(latest_break_20_list)]
     latest_break_20_df.index.name='code'
     column_list=latest_break_20_df.columns.values.tolist()
@@ -3046,9 +3046,9 @@ def mini_atr_market():
             atr_in_codes_last.append([code,atr_in_rate_last])
     atr_min_df=atr_min_df.sort_index(axis=0, by='atr_in_rate', ascending=False)
     atr_min_df.to_csv(ROOT_DIR+'/result_temp1/mini_atr_market_%s.csv' % latest_day_str)
-    print atr_min_df
-    print 'atr_in_codes=',atr_in_codes
-    print 'atr_in_codes_last=',atr_in_codes_last
+    print(atr_min_df)
+    print('atr_in_codes=',atr_in_codes)
+    print('atr_in_codes_last=',atr_in_codes_last)
     return  atr_in_codes
 
 def back_test_atr():
@@ -3076,10 +3076,10 @@ def back_test_atr():
     latest_break_55_df_mean=latest_break_55_df['changepercent'].mean()
     latest_break_55_df_high_mean=latest_break_55_df['h_change'].mean()
     
-    print 'latest_break_20_df_mean=',latest_break_20_df_mean
-    print 'latest_break_20_df_high_mean=',latest_break_20_df_high_mean
-    print 'latest_break_55_df_mean',latest_break_55_df_mean
-    print 'latest_break_55_df_high_mean',latest_break_55_df_high_mean
+    print('latest_break_20_df_mean=',latest_break_20_df_mean)
+    print('latest_break_20_df_high_mean=',latest_break_20_df_high_mean)
+    print('latest_break_55_df_mean',latest_break_55_df_mean)
+    print('latest_break_55_df_high_mean',latest_break_55_df_high_mean)
     
     latest_day_str=get_latest_trade_day()
     latest_20_file_name=ROOT_DIR+'/result_temp/atr_break_20_%s.csv' % latest_day_str
@@ -3097,21 +3097,21 @@ def back_test_atr():
     last_break_20_code_list_int=[]
     for code_str in last_break_20_code_list:
         last_break_20_code_list_int.append(string.atoi(code_str))
-    print 'last_break_20_code_list_int=',last_break_20_code_list_int
-    print 'latest_break_20_code_list=',latest_break_20_code_list
+    print('last_break_20_code_list_int=',last_break_20_code_list_int)
+    print('latest_break_20_code_list=',latest_break_20_code_list)
     continue_break_20_list=list(set(latest_break_20_code_list).intersection(set(last_break_20_code_list_int)))
     latest_break_55_code_list=latest_break_55_df.index.values.tolist()
     latest_break_55_code_list= json.loads(json.dumps(latest_break_55_code_list))
     last_break_55_code_list_int=[]
     for code_str in last_break_55_code_list:
         last_break_55_code_list_int.append(string.atoi(code_str))
-    print 'last_break_55_code_list_int=',last_break_55_code_list_int
+    print('last_break_55_code_list_int=',last_break_55_code_list_int)
     continue_break_55_list=list(set(latest_break_55_code_list).intersection(set(last_break_55_code_list_int)))
 
-    print 'latest_break_55_code_list=', latest_break_55_code_list
+    print('latest_break_55_code_list=', latest_break_55_code_list)
     
-    print 'continue_break_20_list=',continue_break_20_list
-    print 'continue_break_55_list=',continue_break_55_list
+    print('continue_break_20_list=',continue_break_20_list)
+    print('continue_break_55_list=',continue_break_55_list)
     
     
 #test2()     
@@ -3122,13 +3122,13 @@ def back_test_atr():
 
 
 
-import thread
+import _thread
 
 def test_thread1():
-    thread.start_new_thread(market_test,())
-    print 'doing thread1'
-    thread.start_new_thread(stock_realtime_monitor,())
-    print 'doing thread'
+    _thread.start_new_thread(market_test,())
+    print('doing thread1')
+    _thread.start_new_thread(stock_realtime_monitor,())
+    print('doing thread')
     
     
     return
