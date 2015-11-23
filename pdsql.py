@@ -295,7 +295,7 @@ def get_all_code(hist_dir):
     return all_code
     
 def update_hist_data_tosql(codes):
-    all_code=get_all_code(RAW_HIST_DIR)
+    #all_code=get_all_code(RAW_HIST_DIR)
     #pd.DataFrame.to_sql()
     stock_sql_obj=StockSQL()
     #stock_sql_test()
@@ -304,11 +304,13 @@ def update_hist_data_tosql(codes):
     histdata_last_df=stock_sql_obj.query_data(table='histdata_last')
     for code_str in codes:
         update_one_hist(code_str, stock_sql_obj,histdata_last_df)
-        
+    print('update completed')
         
     
 if __name__ == '__main__':   
-    codes=['000018']
+    
+    codes=get_all_code(RAW_HIST_DIR)
+    codes=['000987','000060','600750','600979','000875','600103','002678']
     update_hist_data_tosql(codes)
 
     
