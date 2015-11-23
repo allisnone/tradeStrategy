@@ -45,7 +45,7 @@ def get_raw_hist_df(code_str,latest_count=None):
     file_type='csv'
     file_name=RAW_HIST_DIR+code_str+'.'+file_type
     column_list=['date','open','high','low','close','volume','rmb']
-    print('file_name=',file_name)
+    #print('file_name=',file_name)
     df_0=pd.read_csv(file_name,names=column_list, header=0,encoding='gb2312')#'utf-8')   #for python3
     #print df_0
     #delete column 'rmb' and delete the last row
