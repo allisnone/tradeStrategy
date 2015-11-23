@@ -218,8 +218,6 @@ def refresh():
             get_real_time_price(url,mystock_list,proxy)
             time.sleep(60)
             now=datetime.datetime.now()
-            
-    #while now
 
 refresh()
 
