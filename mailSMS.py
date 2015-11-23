@@ -128,7 +128,6 @@ def send_mail(mailto_list,sub,content):
     mail_user='zgx20022002@163.com'
     mail_pass='821853Zgx'  
     mail_postfix="qq.com"
-    
     me=mail_user+"<"+mail_user+"@"+mail_postfix+">"
     """
     print 'Setting MIMEText'
@@ -158,6 +157,5 @@ if __name__ == '__main__':
         print("send successfully")  
     else:  
         print("send fail") 
-
 #http://lovesoo.org/qq-members-separate-python-script-that-automatically-send-email.html
     
