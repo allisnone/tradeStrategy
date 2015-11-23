@@ -4,9 +4,12 @@ import numpy as np
 import functools
 
 df = pd.DataFrame({'AAA' : [4,5,6,7], 'BBB' : [10,30,20,40],'CCC' : [100,50,-30,-50]})
-print df.ix[0].AAA
-print df.describe()
-print df[2:]
+df=df.set_index('AAA')
+print(df)
+print(df.loc(4).BBB)
+print(df.ix[0].AAA)
+print(df.describe())
+print(df[2:])
 df.index.values
 
 
