@@ -1,5 +1,5 @@
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import string
 import datetime
 from datetime import date
@@ -115,7 +115,7 @@ def name_in_mystock(name):
 #url='http://stock.qq.com/i/'
 
 def get_real_time_price(url,mystock_list,proxies):
-    data = urllib.urlopen(url,proxies=proxy).read()
+    data = urllib.request.urlopen(url,proxies=proxy).read()
     #print data
     line = data.split('\n')
 
@@ -123,7 +123,7 @@ def get_real_time_price(url,mystock_list,proxies):
     now=datetime.datetime.now()
     thisday=now.date()
     #while thisday.isoweekday():
-    print 'code    name      price     increase    increase(%)   mount(w)    myprice    porfile'
+    print('code    name      price     increase    increase(%)   mount(w)    myprice    porfile')
     for vv in line:
         aa = vv.split(',')
         """
@@ -147,9 +147,9 @@ def get_real_time_price(url,mystock_list,proxies):
         if aa[0]:
             price_list=get_price_info(aa)
             if price_list[5]:
-                print "%s %10.2f %10.2f %10.2f %12d w %10.3f %10.2f" %(price_list[0], price_list[1], price_list[2], price_list[3], price_list[4], price_list[5], price_list[6])
+                print("%s %10.2f %10.2f %10.2f %12d w %10.3f %10.2f" %(price_list[0], price_list[1], price_list[2], price_list[3], price_list[4], price_list[5], price_list[6]))
             else:
-                print '%s %10.2f %10.2f %10.2f %12d w' %(price_list[0], price_list[1], price_list[2], price_list[3], price_list[4])
+                print('%s %10.2f %10.2f %10.2f %12d w' %(price_list[0], price_list[1], price_list[2], price_list[3], price_list[4]))
         
         if price_list:
             eventlist=get_state_info(price_list, expect_increase_rate, sell_decrease_rate, now)
@@ -214,7 +214,7 @@ def refresh():
     if week_daynum<=5:
         #while is_valid_trade_time(now) :
         while True:
-            print 'refresh'
+            print('refresh')
             get_real_time_price(url,mystock_list,proxy)
             time.sleep(60)
             now=datetime.datetime.now()

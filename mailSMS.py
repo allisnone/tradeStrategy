@@ -148,16 +148,16 @@ def send_mail(mailto_list,sub,content):
         s.sendmail(mail_user, mailto_list, msg.as_string())  
         s.close()  
         return True  
-    except Exception, e:  
-        print str(e)  
+    except Exception as e:  
+        print(str(e))  
         return False
 
 mailto_list=['104450966@qq.com']   
 if __name__ == '__main__':  
     if send_mail(mailto_list,"here is subject","here is content"):  
-        print "send successfully"  
+        print("send successfully")  
     else:  
-        print "send fail" 
+        print("send fail") 
 
 #http://lovesoo.org/qq-members-separate-python-script-that-automatically-send-email.html
     
