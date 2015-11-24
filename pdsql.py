@@ -8,6 +8,7 @@ from pandas.io import sql
 from tradeStrategy import *
 from pandas.lib import to_datetime
 from pandas.lib import Timestamp
+import datetime
 
 def form_sql(table_name,oper_type='query',select_field=None,where_condition=None,insert_field=None,update_field=None,update_value=None):
     """
@@ -101,14 +102,31 @@ def get_raw_hist_df(code_str,latest_count=None):
     #print('file_name=',file_name)
     df_0=pd.DataFrame({},columns=raw_column_list)
     try:
-        df_0=pd.read_csv(file_name,names=raw_column_list, header=0,encoding='gb2312')#'utf-8')   #for python3
+        try:
+            df=pd.read_csv(file_name,names=column_list, header=0,encoding='utf-8')
+            return df
+        except:
+            df_0=pd.read_csv(file_name,names=raw_column_list, header=0,encoding='gb2312')#'utf-8')   #for python3
+            df=df_0.ix[0:(len(df_0)-2)]
+            df['date'].astype(Timestamp)
+            last_volume=df.tail(1).iloc[0].volume
+            if int(last_volume)==0:
+                df=df[:-1]
+            df.to_csv(file_name,encoding='utf-8')
+            #column_list=['date','open','high','low','close','volume']
+            #column_list=['date','open','high','low','close','volume','rmb']
+            #df=pd.read_csv(file_name,names=column_list, header=0,encoding='utf-8')#,parse_dates=date_spec)
+            return df
+                #print(code_str,df)
+            #print(df)
+            
     except OSError as e:
-        print('OSError:',e)
+        #print('OSError:',e)
         return df_0
     #print df_0
     #delete column 'rmb' and delete the last row
     #del df_0['rmb']
-    df=df_0.ix[0:(len(df_0)-2)]  #to delete '通达信‘
+      #to delete '通达信‘
     #df['date'].astype(Timestamp)
     #rint(df.dtypes)
     
@@ -127,9 +145,7 @@ def get_raw_hist_df(code_str,latest_count=None):
     hist_dir=ROOT_DIR+'/update/'
     file_name=hist_dir+code_str+'.'+file_type
     """
-    df.to_csv(file_name,encoding='utf-8')
-    #column_list=['date','open','high','low','close','volume']
-    column_list=['date','open','high','low','close','volume','rmb']
+    
     """
     time_list=['15:00:00']*len(df)
     df['time0']=pd.Series(time_list,index=df.index)
@@ -138,10 +154,7 @@ def get_raw_hist_df(code_str,latest_count=None):
     date_spec = {'date': [1, 8]}
     print('date_time',df)
     """
-    df=pd.read_csv(file_name,names=column_list, header=0,encoding='utf-8')#,parse_dates=date_spec)
-    df['date'].astype(Timestamp)
-    #print(df)
-    return df
+    
 
 class StockSQL(object):
     def __init__(self):
@@ -229,7 +242,7 @@ class StockSQL(object):
         :return:  last_date: pandas datetime, last db date
         """
         if histdata_last_df.empty:
-            print('histdata_last_df is empty')
+            #print('histdata_last_df is empty')
             return None
         else:
             try:
@@ -237,7 +250,7 @@ class StockSQL(object):
                 last_date=histdata_last_df.loc[code_str,'last_db_time']
                 return last_date
             except KeyError as e:
-                print('KeyError:',e)
+                #print('KeyError:',e)
                 return None
             
     def update_last_db_date(self,code_str,last_date,update_date,histdata_last_df):
@@ -256,6 +269,7 @@ class StockSQL(object):
         else:
             if update_date:
                 self.insert_data(table='histdata_last', fields='code,last_db_time', data=[[code_str,update_date]])
+                #print('firstly update: last_db_time',update_date)
             else:
                 pass
     #for chunk_df in pd.read_sql_query("SELECT * FROM today_stock", engine, chunksize=5):
@@ -292,24 +306,28 @@ def update_one_hist(code_str,stock_sql_obj,histdata_last_df):
     """
     df=get_raw_hist_df(code_str)
     if df.empty:
-        return
+        return 0
     code_list=[code_str]*len(df)
     df['code']=pd.Series(code_list,index=df.index)
     p=df.pop('code')
     df.insert(0,'code',p)
     last_db_date=stock_sql_obj.get_last_db_date(code_str,histdata_last_df)
+    last_db_date_str=''
     #print('last_db_date',last_db_date,type(last_db_date))
-    last_db_date_str='%s' % last_db_date
-    last_db_date_str=last_db_date_str[:10]
     #print('last_db_date_str',last_db_date_str)
+    #criteria0=df.volume>0
+    #df=df[df.volume>0]
     if last_db_date:
+        last_db_date_str='%s' % last_db_date
+        last_db_date_str=last_db_date_str[:10]
+        #criteria1=df.date>last_db_date_str
         df=df[df.date>last_db_date_str]
         #print('sub df', df)
-        if df.empty:
-            print('History data up-to-date for %s, no need update' % code_str)
-            return 0
+    if df.empty:
+        #print('History data up-to-date for %s, no need update' % code_str)
+        return 0
     stock_sql_obj.insert_table(df, 'histdata')
-    print(df.tail(1))
+    #print(df.tail(1))
     #print(df.tail(1).iloc[0])
     update_date=df.tail(1).iloc[0].date
     #last_date=histdata_last_df.loc[date[-1],'date']
@@ -336,6 +354,7 @@ def update_hist_data_tosql(codes):
     :param codes: list type, code string list 
     :return: 
     """
+    starttime=datetime.datetime.now()
     #all_code=get_all_code(RAW_HIST_DIR)
     #pd.DataFrame.to_sql()
     stock_sql_obj=StockSQL()
@@ -345,6 +364,8 @@ def update_hist_data_tosql(codes):
     histdata_last_df=stock_sql_obj.query_data(table='histdata_last')
     for code_str in codes:
         update_one_hist(code_str, stock_sql_obj,histdata_last_df)
+    deltatime=datetime.datetime.now()-starttime
+    print('update duration=',deltatime.days*24*3600+deltatime.seconds)
     print('update completed')
         
     

@@ -473,7 +473,7 @@ def init_all_hist_from_export():
     print(len(hist_code))
     print(len(raw_hist_code))
     """update all hist data from export"""
-    if len(hist_code)==0 or (len(hist_code)!=0 and len(hist_code)!=(len(raw_hist_code)-1)):
+    if len(hist_code)==0 or (len(hist_code)!=0 and len(hist_code)!=(len(raw_hist_code))):
         print('Begin pre-processing  the hist data')
         for code_sybol in raw_hist_code:
             get_raw_hist_df(code_sybol)
