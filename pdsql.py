@@ -102,24 +102,20 @@ def get_raw_hist_df(code_str,latest_count=None):
     #print('file_name=',file_name)
     df_0=pd.DataFrame({},columns=raw_column_list)
     try:
-        try:
-            df=pd.read_csv(file_name,names=column_list, header=0,encoding='utf-8')
-            return df
-        except:
-            df_0=pd.read_csv(file_name,names=raw_column_list, header=0,encoding='gb2312')#'utf-8')   #for python3
-            df=df_0.ix[0:(len(df_0)-2)]
-            df['date'].astype(Timestamp)
+        df_0=pd.read_csv(file_name,names=raw_column_list, header=0,encoding='gb2312')#'utf-8')   #for python3
+        last_date=df_0.tail(1).iloc[0].date
+        if last_date=='数据来源:通达信':
+            df=df_0[:-1]
+            #print('数据来源:通达信')
+            #print(df.tail(1).iloc[0].date)
             last_volume=df.tail(1).iloc[0].volume
             if int(last_volume)==0:
                 df=df[:-1]
+            df['date'].astype(Timestamp)
             df.to_csv(file_name,encoding='utf-8')
-            #column_list=['date','open','high','low','close','volume']
-            #column_list=['date','open','high','low','close','volume','rmb']
-            #df=pd.read_csv(file_name,names=column_list, header=0,encoding='utf-8')#,parse_dates=date_spec)
             return df
-                #print(code_str,df)
-            #print(df)
-            
+        else:
+            return df_0
     except OSError as e:
         #print('OSError:',e)
         return df_0
@@ -368,7 +364,17 @@ def update_hist_data_tosql(codes):
     print('update duration=',deltatime.days*24*3600+deltatime.seconds)
     print('update completed')
         
-    
+
+def is_trade_time_now():
+    except_trade_day_list=['2015-05-01','2015-06-22','2015-09-03','2015-10-01','2015-10-02','2015-10-06','2015-10-07','2015-10-08']
+    now_timestamp=time.time()
+    this_time=datetime.datetime.now()
+    hour=this_time.hours
+    minute=this_time.minutes
+    is_trade_time=((hour>=9 and minute>=30) and (hour<=11 and minute<=30)) or (hour>=13 and hour<=15)
+    is_working_date=this_time.isoweekday()<6 and (this_date not in except_trade_day_list)
+    return is_trade_time and is_working_date
+
 if __name__ == '__main__':   
     
     codes=get_all_code(RAW_HIST_DIR)

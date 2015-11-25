@@ -188,6 +188,7 @@ def get_latest_trade_day(this_date=None):
 
 #to get the latest trade day
 def get_last_trade_day():
+    
     latest_day_str=get_latest_trade_day()
     print('latest_day_str=',latest_day_str)
     latest_datetime_str=latest_day_str+' 10:00:00'
@@ -203,6 +204,17 @@ def is_trade_time(latest_trade_date):
     #latest_trade_date=get_latest_trade_date()
     return this_str>=(latest_trade_date+ ' 09:31:00') and this_str <= (latest_trade_date + ' 15:00:00')
 
+def is_trade_time_now():
+    except_trade_day_list=['2015-05-01','2015-06-22','2015-09-03','2015-10-01','2015-10-02','2015-10-06','2015-10-07','2015-10-08']
+    now_timestamp=time.time()
+    this_time=datetime.datetime.now()
+    hour=this_time.hours
+    minute=this_time.minutes
+    is_trade_time=((hour>=9 and minute>=30) and (hour<=11 and minute<=30)) or (hour>=13 and hour<=15)
+    is_working_date=this_time.isoweekday()<6 and (this_date not in except_trade_day_list)
+    return is_trade_time and is_working_date
+
+    #is_trade_time=now_timestamp>start_timestamp and 
 def get_ma_list(close_list,ma_num):
     ma_list=[]
     i=0
