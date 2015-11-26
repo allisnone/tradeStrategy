@@ -628,7 +628,7 @@ def market_analyze_today():
     output=open(out_file_name,'w')
     sys.stdout=output
     market=Market(today_df)
-    update_all_hist(today_df,df_time_stamp)
+    #update_all_hist(today_df,df_time_stamp)
     #actual_101_list,success_101_rate=market.get_101()
     market.get_hist_cross_analyze()
     market.get_realtime_cross_analyze()
@@ -2362,7 +2362,7 @@ class Market:
         output=open(out_file_name,'w')
         sys.stdout=output
         #market=Market(today_df)
-        update_all_hist(today_df,df_time_stamp)
+        #update_all_hist(today_df,df_time_stamp)
         #actual_101_list,success_101_rate=market.get_101()
         self.get_hist_cross_analyze()
         self.get_realtime_cross_analyze()
@@ -2794,7 +2794,7 @@ def stock_realtime_monitor():
     stock=Stockhistory(code,'D')
     stock.realtime_monitor()
     """
-    init_all_hist_from_export()
+    #init_all_hist_from_export()
     code_list=['002678','000987','002269','601018','603158','002556']#'002755','603988','600276','601857']
     my_monitor=Monitor(code_list)
     my_monitor.realtime_monitor(60)
