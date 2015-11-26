@@ -369,8 +369,8 @@ def is_trade_time_now():
     except_trade_day_list=['2015-05-01','2015-06-22','2015-09-03','2015-10-01','2015-10-02','2015-10-06','2015-10-07','2015-10-08']
     now_timestamp=time.time()
     this_time=datetime.datetime.now()
-    hour=this_time.hours
-    minute=this_time.minutes
+    hour=this_time.hour
+    minute=this_time.minute
     is_trade_time=((hour>=9 and minute>=30) and (hour<=11 and minute<=30)) or (hour>=13 and hour<=15)
     is_working_date=this_time.isoweekday()<6 and (this_date not in except_trade_day_list)
     return is_trade_time and is_working_date
