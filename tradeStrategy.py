@@ -10,13 +10,12 @@ import string
 
 import urllib.request, urllib.error, urllib.parse
 import datetime
-
-
 import threading
-
 import smtplib
 from email.mime.text import MIMEText
 import code
+
+import pdsql as ps
 
 
 ISOTIMEFORMAT='%Y-%m-%d %X'
@@ -659,7 +658,7 @@ class Stockhistory:
         self.code=code_str
         self.ktype=ktype
         self.DEBUG_ENABLED=False
-        self.h_df,self.hist_timestamp=get_hist_df(self.code,'realtime')             #the history data frame data set
+        self.h_df=ps.get_raw_hist_df(code_str)             #the history data frame data set
         self.alarm_trigger_timestamp=0
         self.max_price=-1
         self.min_price=1000
@@ -668,12 +667,6 @@ class Stockhistory:
         #self.average_high=0
         #self.average_low=0
         #print self.h_df
-    
-    def init_hist_df(self):
-        #h_df,hist_timestamp=get_hist_df(self.code)
-        #df= h_df.set_index('date')
-        #df.index.name='date'
-        return 
     
     def set_hist_df_by_date(self,from_date_str, to_date_str,raw_df=None):  #from_date_str: '2015-05-16'
         h_df=self.h_df#.set_index('date')
@@ -702,8 +695,8 @@ class Stockhistory:
         self.DEBUG_ENABLED=debug
         
     #get df of the latest <num>
-    def set_history_df(self,analyze_type):
-        self.h_df,self.hist_timestamp=get_hist_df(self.code,analyze_type)
+    def set_history_df(self,df):
+        self.h_df=df
     
     def get_average_rate(self,days=None,selected_column=None):
         num=60
@@ -789,10 +782,12 @@ class Stockhistory:
         return temp_df
     
     def _form_temp_df1(self):
-      
+        #print(self.h_df)
         if len(self.h_df) <30:
-            return 0,'',0,''
+            return 0,'',0,'' 
         df=self.h_df
+        if len(self.h_df)>1000:
+            df=df.tail(1000)
         close_c=df['close']
         idx=close_c.index.values.tolist()
         va=df['close'].values.tolist()
@@ -829,7 +824,7 @@ class Stockhistory:
         expect_rate=1.8
         temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
         temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
-        temp_df.to_csv(ROOT_DIR+'/result_temp1/temp_%s.csv' % self.code)
+        temp_df.to_csv(ROOT_DIR+'/result_temp1/temp_%s.csv' % self.code,encoding='utf-8')
         atr_in_rate=round(temp_df.tail(1)['atr_in'].mean(),2)
         last_date=temp_df.tail(1).iloc[0].date
         #print type(last_date)
@@ -1127,7 +1122,8 @@ class Stockhistory:
     #get topest df for history data
     def get_hist_topest(self,recent_days=None):
         if recent_days!=None and recent_days<len(self.h_df):
-            self.set_history_df(recent_days)
+            df=self.h_df.tail(recent_days)
+            self.set_history_df(df)
         temp_df=self._form_temp_df()
         #print temp_df
         topest_df=temp_df[temp_df.close==(temp_df.last_close*1.1).round(2)]   #filter the topest items
@@ -2156,7 +2152,7 @@ class Market:
             for code in self.all_codes:
                 if code in hist_all_code:
                     stockhist=Stockhistory(code_str=code,ktype='D')
-                    stockhist.set_history_df(analyze_type)
+                    #stockhist.set_history_df(analyze_type)
                     if stockhist.is_new_stock():
                         pass
                     else:
@@ -2181,7 +2177,7 @@ class Market:
             for code in self.all_codes:
                 if code in hist_all_code:
                     stockhist=Stockhistory(code_str=code,ktype='D')
-                    stockhist.set_history_df(analyze_type)
+                    #stockhist.set_history_df(analyze_type)
                     if stockhist.is_new_stock():
                         pass
                     else:
@@ -2237,7 +2233,8 @@ class Market:
             for code in all_codes:
                 stockhist=Stockhistory(code_str=code,ktype='D')
                 if analyze_type=='realtime':
-                    stockhist.set_history_df('realtime')
+                    pass
+                    #stockhist.set_history_df('realtime')
                 if stockhist.is_new_stock():
                     pass
                 else:
@@ -2267,7 +2264,8 @@ class Market:
             for code in all_codes:
                 stockhist=Stockhistory(code_str=code,ktype='D')
                 if analyze_type=='realtime':
-                    stockhist.set_history_df('realtime')
+                    pass
+                    #stockhist.set_history_df('realtime')
                 if stockhist.is_new_stock():
                     pass
                 else:
@@ -3043,9 +3041,11 @@ def mini_atr_market():
     df_data={}
     column_list= ['code','atr_in_rate']
     atr_min_df=pd.DataFrame(df_data,columns=column_list)
+    #print('all_codes=',all_codes)
     for code in all_codes:
         stock=Stockhistory(code,'D')
         atr_in_rate,last_date,atr_in_rate_last,last2_date=stock._form_temp_df1()
+        #print(atr_in_rate,last_date,atr_in_rate_last,last2_date)
         if atr_in_rate:
             df_data={}
             df_data['code']=[str(code)]
@@ -3059,6 +3059,8 @@ def mini_atr_market():
             atr_in_codes_last.append([code,atr_in_rate_last])
     atr_min_df=atr_min_df.sort_index(axis=0, by='atr_in_rate', ascending=False)
     atr_min_df.to_csv(ROOT_DIR+'/result_temp1/mini_atr_market_%s.csv' % latest_day_str)
+    stocksql_obj=ps.StockSQL()
+    stocksql_obj.insert_table(data_frame=atr_min_df,table_name='mini_atr')
     print(atr_min_df)
     print('atr_in_codes=',atr_in_codes)
     print('atr_in_codes_last=',atr_in_codes_last)

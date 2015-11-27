@@ -3,3 +3,4 @@ encoding/pdsql.py=utf-8
 encoding/readcsv.py=utf-8
 encoding/stockRealtimeMonitor.py=utf-8
 encoding/tradeStrategy.py=utf-8
+encoding/update_hist_and_db.py=utf-8
