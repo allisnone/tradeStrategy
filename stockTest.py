@@ -28,7 +28,7 @@ ma_offset=0.01
 great_score=4
 great_change=5.0
 all_codes=gt5_df.index.values.tolist()
-print len(all_codes)
+print(len(all_codes))
 all_codes=['002678']
 #all_codes=['002542']
 
