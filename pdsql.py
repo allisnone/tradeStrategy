@@ -283,6 +283,14 @@ class StockSQL(object):
         delete_sql=form_sql(table_name=table,oper_type='delete',where_condition=condition)
         sql.execute(delete_sql, self.engine)
     
+    def drop_table(self,table):
+        """
+        :param table_name: string type, db_name.table_name
+        :return: 
+        """
+        drop_sql='drop table %s' % table
+        sql.execute(delete_sql, self.engine)
+    
     def get_last_db_date(self,code_str,histdata_last_df):
         """
         :param code_str: string type, code_name

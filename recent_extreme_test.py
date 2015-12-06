@@ -24,7 +24,7 @@ if __name__ == '__main__':
     #result_df=result_df.sort_index(axis=0, by='ct_o_num', ascending=False)
     result_df=result_df.sort_values(axis=0, by='o_ma5_rate', ascending=False)
     result_df.set_index('code')
-    update_to_db=False
+    update_to_db=True
     stock_sql_obj=StockSQL()
     if update_to_db:
         stock_sql_obj.insert_table(result_df, 'madata')
