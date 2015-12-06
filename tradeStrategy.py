@@ -674,7 +674,13 @@ class Stockhistory:
             h_df=raw_df
         self.h_df=filter_df_by_date(h_df,from_date_str,to_date_str)
         
-        
+    def set_hist_df_by_count(self,count):
+        if self.h_df.empty:
+            pass
+        else:
+            valid_count=min(count,len(self.h_df))
+            self.h_df=self.h_df.tail(valid_count)
+                
     def set_max_price(self,max_price):
         self.max_price=max_price
         
@@ -688,7 +694,7 @@ class Stockhistory:
         return len(self.h_df)<2
     
     def is_second_new_stock(self):
-        return len(self.h_df)>=20 and len(self.h_df)<200
+        return len(self.h_df)>=20 and len(self.h_df)<100
     
     #to set debug mode
     def set_debug_mode(self,debug):
@@ -740,7 +746,7 @@ class Stockhistory:
     def _form_temp_df(self):
         
         if self.h_df.empty:
-            return False
+            return self.h_df
         df=self.h_df
         close_c=df['close']
         idx=close_c.index.values.tolist()
@@ -916,17 +922,77 @@ class Stockhistory:
             lopen_lclose_df=low_open_df[low_open_df['close']<low_open_df['open']*(1+trade_rate*0.01)]
             lopen_lclose_rate=round(round(len(lopen_lclose_df),2)/len(low_open_df),2)
             print('lopen_lclose_rate_n%s=%s' %(high_open_rate,lopen_lclose_rate))
-       
         return
     
-    def get_trade_df(self,ma_type='ma5',ma_offset=0.01,great_score=4,great_change=5.0):
+    def is_drop_then_up(self,great_dropdown=-4.0,turnover_rate=0.75,turnover_num=None):
+        #turnover_num=2, mean 2 days inscrease over turnover_rate
+        temp_df=self._form_temp_df()
+        is_drop_up=False
+        actual_turnover_rate=0
+        if temp_df.empty:
+            pass
+        else:
+            if turnover_num and turnover_num<len(temp_df)-1:
+                temp_df=temp_df.tail(turnover_num+1)
+                drop_rate=temp_df.iloc[0].p_change
+                temp_df_1=temp_df.tail(turnover_num)
+                total_incrs_after_drop=temp_df_1['p_change'].sum()
+                is_drop_up=total_incrs_after_drop>=turnover_rate*abs(drop_rate) and drop_rate<great_dropdown
+                if is_drop_up:
+                    actual_turnover_rate=round(total_incrs_after_drop/abs(drop_rate),4)
+            elif not turnover_num and len(temp_df)>=2: #turnover_num=1
+                temp_df=temp_df.tail(2)
+                drop_rate=temp_df.iloc[0].p_change
+                incrs_after_drop=temp_df.iloc[1].p_change
+                is_drop_up=incrs_after_drop>=turnover_rate*abs(drop_rate) and drop_rate<great_dropdown
+                if is_drop_up:
+                    actual_turnover_rate=round(incrs_after_drop/abs(drop_rate),4)
+            else:
+                pass
+        return is_drop_up,actual_turnover_rate
+    
+    def get_recent_over_ma(self,ma_type='ma5',ma_offset=0.002,recent_count=None):
+        temp_df=self._form_temp_df()
+        if temp_df.empty:
+            return 0.0,0
+        else:
+            if recent_count:
+                temp_df=temp_df.tail(min(len(temp_df),recent_count))
+                if temp_df.empty:
+                    return 0.0,0
+            else:
+                pass
+        date_last=temp_df.tail(1).iloc[0].date
+        temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])>ma_offset*temp_df['close'].shift(1),1,0)       #1 as over ma; 0 for near ma but unclear
+        df_over_ma=temp_df[(temp_df['close']-temp_df[ma_type])>ma_offset*temp_df['close'].shift(1)]
+        over_ma_rate=round(round(len(df_over_ma),4)/len(temp_df),4)
+        #print('over_ma_rate=',over_ma_rate)
+        continue_over_ma_num=0
+        index_i=len(df_over_ma)-1
+        index_list=df_over_ma.index.values.tolist()
+        if df_over_ma.empty:
+            return over_ma_rate,continue_over_ma_num
+        date_last_over_ma=df_over_ma.tail(1).iloc[0].date
+        #print(date_last,date_last_over_ma)
+        while index_i>0 and date_last_over_ma==date_last:
+            if index_list[index_i]-index_list[index_i-1]==1:
+                continue_over_ma_num+=1
+                index_i=index_i-1
+            else:
+                if index_i<len(df_over_ma)-1:
+                    continue_over_ma_num=continue_over_ma_num+1
+                break
+        #print('continue_over_ma=',continue_over_ma_num)
+        return over_ma_rate,continue_over_ma_num
+    
+    def get_trade_df(self,ma_type='ma5',ma_offset=0.002,great_score=4,great_change=5.0):
         #based on MA5
         #scoring based on recent three day's close: -5 to 5
         temp_df=self._form_temp_df()
         if len(temp_df)==0:
             return {}
-        ma_offset=0.01
-        temp_df['pv_rate']=(temp_df['p_change']/100/(temp_df['volume']-temp_df['volume'].shift(1))*temp_df['volume'].shift(1)).round(2)
+        ma_offset=0.002
+        temp_df['pv_rate']=(temp_df['p_change']/100.0/(temp_df['volume']-temp_df['volume'].shift(1))*temp_df['volume'].shift(1)).round(2)
         temp_df['v_rate']=(temp_df['volume']/temp_df['v_ma5'].shift(1)).round(2)
         temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])>ma_offset*temp_df['close'].shift(1),1,0)       #1 as over ma; 0 for near ma but unclear
         temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])<-ma_offset*temp_df['close'].shift(1),-1,temp_df['c_o_ma']) #-1 for bellow ma
@@ -971,7 +1037,7 @@ class Stockhistory:
         #temp_df['strategy']=temp_df['regime'].shift(1)*temp_df['market']
         result_data={'code':self.code,
                      'l_s_date':last_stratege_date,
-                     'l_s_state':this_stratege_state*-1,
+                     'l_s_state':this_stratege_state*(-1),
                      't_s_date':this_stratege_date,
                      't_s_state':this_stratege_state,
                      't_date':this_date,
