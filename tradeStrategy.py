@@ -696,6 +696,18 @@ class Stockhistory:
     def is_second_new_stock(self):
         return len(self.h_df)>=20 and len(self.h_df)<100
     
+    def is_stop_trade(self):
+        is_stopping=False
+        if self.h_df.empty:
+            is_stopping=True
+        else:
+            last_trade_date=get_latest_trade_day()
+            last_df_date=self.h_df.tail(1).iloc[0].date
+            #print(last_trade_date,last_df_date)
+            is_stopping=last_df_date<last_trade_date
+            #print(is_stopping)
+        return is_stopping
+            
     #to set debug mode
     def set_debug_mode(self,debug):
         self.DEBUG_ENABLED=debug
@@ -929,7 +941,7 @@ class Stockhistory:
         temp_df=self._form_temp_df()
         is_drop_up=False
         actual_turnover_rate=0
-        if temp_df.empty:
+        if temp_df.empty or self.is_stop_trade():
             pass
         else:
             if turnover_num and turnover_num<len(temp_df)-1:
@@ -951,9 +963,42 @@ class Stockhistory:
                 pass
         return is_drop_up,actual_turnover_rate
     
+    def is_extreme_recent(self,recent_count=None,continue_extreme_count=None):
+        temp_df=self._form_temp_df()
+        continue_extreme_num=0
+        is_continue_extreme=False
+        if temp_df.empty or self.is_stop_trade():
+            return is_continue_extreme,continue_extreme_num
+        extreme_num=1
+        extreme_rate=0.1
+        recent_num=20
+        if recent_count:
+            recent_num=recent_count
+        recent_df=temp_df.tail(min(len(temp_df),100))
+        last_index=recent_df.index.values.tolist()[-1]
+        if continue_extreme_count:
+            extreme_num=continue_extreme_count
+        extreme_df=recent_df[recent_df.volume<recent_df.v_ma10*extreme_rate]
+        if extreme_df.empty:
+            return is_continue_extreme,continue_extreme_num
+        else:
+            last_extreme_index=extreme_df.index.values.tolist()[-1]
+            last_extreme_rate=extreme_df.tail(1).iloc[0].p_change
+            is_extreme=(last_index-last_extreme_index)<recent_num
+            if (last_index-last_extreme_index)<recent_num:
+                continue_extreme_num=self.get_continue_index_num(extreme_df)
+                if continue_extreme_num==0:
+                    continue_extreme_num=1
+                else:
+                    pass
+            continue_extreme_num=continue_extreme_num*int(last_extreme_rate/abs(last_extreme_rate))
+            is_continue_extreme=continue_extreme_num>=extreme_num
+            #print(self.code,continue_extreme_num)
+        return is_continue_extreme,continue_extreme_num
+    
     def get_recent_over_ma(self,ma_type='ma5',ma_offset=0.002,recent_count=None):
         temp_df=self._form_temp_df()
-        if temp_df.empty:
+        if temp_df.empty or self.is_stop_trade():
             return 0.0,0
         else:
             if recent_count:
@@ -974,16 +1019,26 @@ class Stockhistory:
             return over_ma_rate,continue_over_ma_num
         date_last_over_ma=df_over_ma.tail(1).iloc[0].date
         #print(date_last,date_last_over_ma)
-        while index_i>0 and date_last_over_ma==date_last:
-            if index_list[index_i]-index_list[index_i-1]==1:
-                continue_over_ma_num+=1
-                index_i=index_i-1
-            else:
-                if index_i<len(df_over_ma)-1:
-                    continue_over_ma_num=continue_over_ma_num+1
-                break
+        if date_last_over_ma==date_last:
+            continue_over_ma_num=self.get_continue_index_num(df_over_ma)
         #print('continue_over_ma=',continue_over_ma_num)
         return over_ma_rate,continue_over_ma_num
+    
+    def get_continue_index_num(self,df):
+        continue_num=0
+        if df.empty:
+            return continue_num
+        index_i=len(df)-1
+        index_list=df.index.values.tolist()
+        while index_i>0:
+            if index_list[index_i]-index_list[index_i-1]==1:
+                continue_num+=1
+            else:
+                break
+            index_i=index_i-1
+        if continue_num>0:
+            continue_num+=1
+        return continue_num
     
     def get_trade_df(self,ma_type='ma5',ma_offset=0.002,great_score=4,great_change=5.0):
         #based on MA5

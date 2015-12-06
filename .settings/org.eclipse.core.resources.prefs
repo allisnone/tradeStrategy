@@ -1,6 +1,7 @@
 eclipse.preferences.version=1
 encoding/pdsql.py=utf-8
 encoding/readcsv.py=utf-8
+encoding/recent_extreme_test.py=utf-8
 encoding/recent_over_ma_test.py=utf-8
 encoding/remove_export_files.py=utf-8
 encoding/stockRealtimeMonitor.py=utf-8
