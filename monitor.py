@@ -26,7 +26,6 @@ def monitor_test():
     mean_inscrease=filter_df['changepercent'].mean()
     print(filter_df)
     print(mean_inscrease)
-    
     return
 
 monitor_test()
