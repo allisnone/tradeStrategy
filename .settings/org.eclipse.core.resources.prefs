@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding/monitor.py=utf-8
 encoding/pdsql.py=utf-8
 encoding/readcsv.py=utf-8
 encoding/recent_extreme_test.py=utf-8

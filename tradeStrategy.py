@@ -22,7 +22,7 @@ ISOTIMEFORMAT='%Y-%m-%d %X'
 #ISODATEFORMAT='%Y%m%d'
 ISODATEFORMAT='%Y-%m-%d'
 
-ROOT_DIR='E:/work/stockAnalyze'
+ROOT_DIR='C:/work/stockAnalyze'
 
 RAW_HIST_DIR=ROOT_DIR+'/export/'
 HIST_DIR=ROOT_DIR+'/hist/'
@@ -338,6 +338,8 @@ def get_today_df():
     today_df=today_df.astype(float)
     today_df.insert(6, 'h_change', (100*(today_df.high-today_df.settlement)/today_df.settlement).round(2))
     today_df.insert(7, 'l_change', (100*(today_df.low-today_df.settlement)/today_df.settlement).round(2))
+    today_df['atr']=np.where(today_df['high']-today_df['low']<today_df['high']-today_df['settlement'],(today_df['high']-today_df['settlement'])/today_df['settlement']*100.0,(today_df['high']-today_df['low'])/today_df['settlement']*100.0) #temp_df['close'].shift(1)-temp_df['low'])
+    today_df['atr']=np.where(today_df['atr']<today_df['settlement']-today_df['low'],(today_df['settlement']-today_df['low'])/today_df['settlement']*100.0,today_df['atr'])
     return today_df,this_time_str
 
 def write_today_df(file_name,today_df):
