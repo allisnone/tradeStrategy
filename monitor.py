@@ -27,5 +27,4 @@ def monitor_test():
     print(filter_df)
     print(mean_inscrease)
     return
-
 monitor_test()
