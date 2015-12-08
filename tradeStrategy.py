@@ -220,7 +220,7 @@ def get_pass_time():
     :param this_time: ，string
     :return:,float 
     """
-    pass_second=0
+    pass_second=0.0
     if not is_trade_time_now():
         return pass_second
     this_time=datetime.datetime.now()
@@ -235,7 +235,7 @@ def get_pass_time():
     elif hour<13:
         pass_second=2*60*60
     elif hour<15:
-        pass_second=(hour*3600+minute*60+second)-(9*3600+30*60)-(1.5*3600)
+        pass_second=2*60*60+(hour*3600+minute*60+second)-13*3600
     else:
         pass_second=total_second
     return round(round(pass_second/total_second,2),2)
