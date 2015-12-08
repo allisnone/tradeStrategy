@@ -22,7 +22,8 @@ ISOTIMEFORMAT='%Y-%m-%d %X'
 #ISODATEFORMAT='%Y%m%d'
 ISODATEFORMAT='%Y-%m-%d'
 
-ROOT_DIR='C:/work/stockAnalyze'
+#ROOT_DIR='C:/work/stockAnalyze'
+ROOT_DIR="C:/中国银河证券海王星/T0002"
 
 RAW_HIST_DIR=ROOT_DIR+'/export/'
 HIST_DIR=ROOT_DIR+'/hist/'
@@ -1001,12 +1002,12 @@ class Stockhistory:
     def get_recent_over_ma(self,ma_type='ma5',ma_offset=0.002,recent_count=None):
         temp_df=self._form_temp_df()
         if temp_df.empty or self.is_stop_trade():
-            return 0.0,0
+            return 0.0,0,'1979-01-01'
         else:
             if recent_count:
                 temp_df=temp_df.tail(min(len(temp_df),recent_count))
                 if temp_df.empty:
-                    return 0.0,0
+                    return 0.0,0,'1979-01-01'
             else:
                 pass
         date_last=temp_df.tail(1).iloc[0].date
@@ -1024,7 +1025,7 @@ class Stockhistory:
         if date_last_over_ma==date_last:
             continue_over_ma_num=self.get_continue_index_num(df_over_ma)
         #print('continue_over_ma=',continue_over_ma_num)
-        return over_ma_rate,continue_over_ma_num
+        return over_ma_rate,continue_over_ma_num,date_last
     
     def get_continue_index_num(self,df):
         continue_num=0
