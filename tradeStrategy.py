@@ -214,6 +214,32 @@ def is_trade_time_now():
     is_working_date=this_time.isoweekday()<6 and (this_date not in except_trade_day_list)
     return is_trade_time and is_working_date
 
+def get_pass_time():
+    """
+    提取已开市时间比例
+    :param this_time: ，string
+    :return:,float 
+    """
+    pass_second=0
+    if not is_trade_time_now():
+        return pass_second
+    this_time=datetime.datetime.now()
+    hour=this_time.hour
+    minute=this_time.minute
+    second=this_time.second
+    total_second=4*60*60
+    if hour<9 or (hour==9 and minute<=30):
+        pass
+    elif hour<11 or (hour==11 and minute<=30):
+        pass_second=(hour*3600+minute*60+second)-(9*3600+30*60)
+    elif hour<13:
+        pass_second=2*60*60
+    elif hour<15:
+        pass_second=(hour*3600+minute*60+second)-(9*3600+30*60)-(1.5*3600)
+    else:
+        pass_second=total_second
+    return round(round(pass_second/total_second,2),2)
+
     #is_trade_time=now_timestamp>start_timestamp and 
 def get_ma_list(close_list,ma_num):
     ma_list=[]
