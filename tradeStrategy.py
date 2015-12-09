@@ -970,7 +970,7 @@ class Stockhistory:
         temp_df=self._form_temp_df()
         is_drop_up=False
         actual_turnover_rate=0
-        if temp_df.empty or self.is_stop_trade():
+        if temp_df.empty or (self.is_stop_trade() and not temp_df.empty):
             pass
         else:
             if turnover_num and turnover_num<len(temp_df)-1:
@@ -996,7 +996,7 @@ class Stockhistory:
         temp_df=self._form_temp_df()
         continue_extreme_num=0
         is_continue_extreme=False
-        if temp_df.empty or self.is_stop_trade():
+        if temp_df.empty or (self.is_stop_trade() and not temp_df.empty):
             return is_continue_extreme,continue_extreme_num
         extreme_num=1
         extreme_rate=0.1
@@ -1027,15 +1027,15 @@ class Stockhistory:
     
     def get_recent_over_ma(self,ma_type='ma5',ma_offset=0.002,recent_count=None):
         temp_df=self._form_temp_df()
-        if temp_df.empty or self.is_stop_trade():
+        count=len(temp_df)
+        if temp_df.empty or (self.is_stop_trade() and not temp_df.empty):
             return 0.0,0,'1979-01-01'
         else:
             if recent_count:
-                temp_df=temp_df.tail(min(len(temp_df),recent_count))
-                if temp_df.empty:
-                    return 0.0,0,'1979-01-01'
+                count=min(len(temp_df),recent_count)
             else:
                 pass
+        temp_df=temp_df.tail(count)
         date_last=temp_df.tail(1).iloc[0].date
         temp_df['c_o_ma']=np.where((temp_df['close']-temp_df[ma_type])>ma_offset*temp_df['close'].shift(1),1,0)       #1 as over ma; 0 for near ma but unclear
         df_over_ma=temp_df[(temp_df['close']-temp_df[ma_type])>ma_offset*temp_df['close'].shift(1)]
@@ -1045,7 +1045,7 @@ class Stockhistory:
         index_i=len(df_over_ma)-1
         index_list=df_over_ma.index.values.tolist()
         if df_over_ma.empty:
-            return over_ma_rate,continue_over_ma_num
+            return over_ma_rate,continue_over_ma_num,'1979-01-01'
         date_last_over_ma=df_over_ma.tail(1).iloc[0].date
         #print(date_last,date_last_over_ma)
         if date_last_over_ma==date_last:

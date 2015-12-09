@@ -71,7 +71,7 @@ def form_sql(table_name,oper_type='query',select_field=None,where_condition=None
         sql='delete from %s'%table_name + condition + ';'
     else:
         pass
-    print('%s_sql=%s'%(oper_type,sql))
+    # print('%s_sql=%s'%(oper_type,sql))
     return sql
 
 def get_raw_hist_df0(code_str,latest_count=None):
