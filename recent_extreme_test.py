@@ -16,6 +16,7 @@ if __name__ == '__main__':
         if temp_df.empty:
             pass
         else:
+            temp_df.is_copy=False
             atr_in_rate=round(temp_df.tail(1)['atr_in'].mean(),2)
             over_ma5_rate,continue_over_ma5_num,date_last5=stock_hist_obj.get_recent_over_ma(temp_df,ma_type='ma5',ma_offset=0.002,recent_count=20)
             over_ma10_rate,continue_over_ma10_num,date_last10=stock_hist_obj.get_recent_over_ma(temp_df,ma_type='ma10',ma_offset=0.002,recent_count=40)
