@@ -824,7 +824,8 @@ class Stockhistory:
         temp_df['atr_%s_max_r'%long_num]=np.round(pd.rolling_max(temp_df['atr_%s_rate'%long_num], window=long_num), 2)
         expect_rate=1.8
         temp_df['rate_%s'%expect_rate]=(expect_rate*temp_df['atr']/temp_df['atr']).round(2)
-        temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
+        #temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]) & (temp_df['atr_%s_max_r'%short_num]>=temp_df['rate_%s'%expect_rate]),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
+        temp_df['atr_in']=np.where((temp_df['atr_%s_rate'%short_num]==temp_df['atr_%s_max_r'%short_num]),(0.5*(temp_df['atr_%s_rate'%short_num]+temp_df['atr_%s_rate'%long_num])).round(2),0)
         #temp_df.to_csv(ROOT_DIR+'/result_temp/temp_%s.csv' % self.code)
         return temp_df
     
@@ -965,9 +966,9 @@ class Stockhistory:
             print('lopen_lclose_rate_n%s=%s' %(high_open_rate,lopen_lclose_rate))
         return
     
-    def is_drop_then_up(self,great_dropdown=-4.0,turnover_rate=0.75,turnover_num=None):
+    def is_drop_then_up(self,temp_df,great_dropdown=-4.0,turnover_rate=0.75,turnover_num=None):
         #turnover_num=2, mean 2 days inscrease over turnover_rate
-        temp_df=self._form_temp_df()
+        #temp_df=self._form_temp_df()
         is_drop_up=False
         actual_turnover_rate=0
         if temp_df.empty or (self.is_stop_trade() and not temp_df.empty):
@@ -992,8 +993,8 @@ class Stockhistory:
                 pass
         return is_drop_up,actual_turnover_rate
     
-    def is_extreme_recent(self,recent_count=None,continue_extreme_count=None):
-        temp_df=self._form_temp_df()
+    def is_extreme_recent(self,temp_df,recent_count=None,continue_extreme_count=None):
+        #temp_df=self._form_temp_df()
         continue_extreme_num=0
         is_continue_extreme=False
         if temp_df.empty or (self.is_stop_trade() and not temp_df.empty):
@@ -1025,8 +1026,8 @@ class Stockhistory:
             #print(self.code,continue_extreme_num)
         return is_continue_extreme,continue_extreme_num
     
-    def get_recent_over_ma(self,ma_type='ma5',ma_offset=0.002,recent_count=None):
-        temp_df=self._form_temp_df()
+    def get_recent_over_ma(self,temp_df,ma_type='ma5',ma_offset=0.002,recent_count=None):
+        #temp_df=self._form_temp_df()
         count=len(temp_df)
         if temp_df.empty or (self.is_stop_trade() and not temp_df.empty):
             return 0.0,0,'1979-01-01'
@@ -3189,7 +3190,7 @@ def mini_atr_market():
     atr_in_codes=[]
     atr_in_codes_last=[]
     df_data={}
-    column_list= ['code','atr_in_rate']
+    column_list= ['code','date','atr_in_rate']
     atr_min_df=pd.DataFrame(df_data,columns=column_list)
     #print('all_codes=',all_codes)
     for code in all_codes:
@@ -3199,6 +3200,7 @@ def mini_atr_market():
         if atr_in_rate:
             df_data={}
             df_data['code']=[str(code)]
+            df_data['date']=[latest_day_str]
             df_data['atr_in_rate']=[atr_in_rate]
             #code_df=pd.DataFrame(code_data,index=['code'],columns=result_column)
             #result_df=result_df.append(code_df,ignore_index=True)
