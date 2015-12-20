@@ -8,6 +8,7 @@ if __name__ == '__main__':
     stronge_ma_3_list=[]
     result_column=['code','date','o_ma5_rate','ct_o_ma5_num','o_ma10_rate','ct_o_ma10_num','reversal','extreme','mini_atr_r']
     result_df=pd.DataFrame(data,columns=result_column)
+    #today_df,time_str=get_today_df()
     codes=get_all_code(RAW_HIST_DIR)
     for code in codes:
         code_data={}

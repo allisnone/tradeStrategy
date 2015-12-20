@@ -361,12 +361,15 @@ def get_today_df():
         today_df= today_df.set_index('code')
         today_df.index.name=this_time_str
         #return today_df,this_time_str
-    
+    if today_df.empty:
+        return today_df
     today_df=today_df.astype(float)
     today_df.insert(6, 'h_change', (100*(today_df.high-today_df.settlement)/today_df.settlement).round(2))
     today_df.insert(7, 'l_change', (100*(today_df.low-today_df.settlement)/today_df.settlement).round(2))
-    today_df['atr']=np.where(today_df['high']-today_df['low']<today_df['high']-today_df['settlement'],(today_df['high']-today_df['settlement'])/today_df['settlement']*100.0,(today_df['high']-today_df['low'])/today_df['settlement']*100.0) #temp_df['close'].shift(1)-temp_df['low'])
-    today_df['atr']=np.where(today_df['atr']<today_df['settlement']-today_df['low'],(today_df['settlement']-today_df['low'])/today_df['settlement']*100.0,today_df['atr'])
+    today_df['atr']=np.where((today_df['high']-today_df['low'])<(today_df['high']-today_df['settlement']),(today_df['high']-today_df['settlement']),(today_df['high']-today_df['low'])) #temp_df['close'].shift(1)-temp_df['low'])
+    today_df['atr']=np.where(today_df['atr']<(today_df['settlement']-today_df['low']),(today_df['settlement']-today_df['low']),today_df['atr'])
+    today_df['atr_ocp']=(today_df['settlement']-today_df['open'])/today_df['atr']
+    today_df['atr_r']=today_df['atr']/today_df['settlement']*100.0
     return today_df,this_time_str
 
 def write_today_df(file_name,today_df):
