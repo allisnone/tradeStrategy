@@ -28,7 +28,7 @@ def monitor_test():
         stock_hist_obj=Stockhistory(code,'D')
         temp_df=stock_hist_obj._form_temp_df()
         #print(temp_df.tail(1))
-        update_today=True
+        update_today=False
         if update_today:
             temp_df=temp_df.tail(2).head(1)
         else:
