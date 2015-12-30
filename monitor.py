@@ -17,6 +17,8 @@ def monitor_test():
     print(len(today_df_h_open))
     print('+++++++++++++++++++++++++++++++++++++++++++')
     gap_code_list=[]
+    turn_over_list=[]
+    great_drop_down=-3.5
     for code in today_df_h_open.index.values.tolist():
         #print(today_df_h_open.index.values.tolist())
         #print(today_df_h_open.ix[code])
@@ -24,6 +26,7 @@ def monitor_test():
         this_trade=today_df_h_open.ix[code].trade
         this_high=today_df_h_open.ix[code].high
         this_low=today_df_h_open.ix[code].low
+        this_p_change=today_df_h_open.ix[code].changepercent
         
         stock_hist_obj=Stockhistory(code,'D')
         temp_df=stock_hist_obj._form_temp_df()
@@ -38,12 +41,20 @@ def monitor_test():
         last_close=temp_df.iloc[0].close
         last_high=temp_df.iloc[0].high
         last_low=temp_df.iloc[0].low
+        last_p_change=temp_df.iloc[0].p_change
+        
         if min(this_open,this_trade)>last_high*(1+0.01*high_open_rate) and (this_high!=this_low):
         #if min(this_open,this_trade)>max(last_open,last_close):
             print(code,this_open,this_trade,last_close,last_close)
             gap_code_list.append(code)
+        if last_p_change<great_drop_down and this_p_change>=abs(great_drop_down)*0.8:
+            turn_over_list.append(code)
+            
     print('gap_code_list=',gap_code_list)
     print(len(gap_code_list))
+    print('turn_over_list=',turn_over_list)
+    print(len(turn_over_list))
+    
     great_change=4.0
     today_df_gt_3=today_df[today_df.changepercent>great_change]
     today_df_lt_n3=today_df[today_df.changepercent<-great_change]
