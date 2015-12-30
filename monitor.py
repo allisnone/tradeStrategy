@@ -18,7 +18,7 @@ def monitor_test():
     print('+++++++++++++++++++++++++++++++++++++++++++')
     gap_code_list=[]
     turn_over_list=[]
-    great_drop_down=-3.5
+    great_drop_down=-3.1
     for code in today_df_h_open.index.values.tolist():
         #print(today_df_h_open.index.values.tolist())
         #print(today_df_h_open.ix[code])
@@ -47,7 +47,7 @@ def monitor_test():
         #if min(this_open,this_trade)>max(last_open,last_close):
             print(code,this_open,this_trade,last_close,last_close)
             gap_code_list.append(code)
-        if last_p_change<great_drop_down and this_p_change>=abs(great_drop_down)*0.8:
+        if last_p_change<great_drop_down and this_p_change>=abs(last_p_change)*0.8:
             turn_over_list.append(code)
             
     print('gap_code_list=',gap_code_list)
