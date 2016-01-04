@@ -4,7 +4,6 @@ from fileoperation import *
 from tradeStrategy import *
 
 def monitor_test():
-    
     today_df,time_str=get_today_df()
     print(today_df)
     atr_min_df=today_df.sort_index(axis=0, by='atr', ascending=True)
