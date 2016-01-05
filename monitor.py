@@ -34,6 +34,7 @@ def monitor_test():
         temp_df=stock_hist_obj._form_temp_df()
         temp_df=temp_df.tail(1)
         latest_hist_trade_date=temp_df.iloc[0].date
+        latest_hist_trade_date=latest_hist_trade_date.replace('/','-')
         print('latest_hist_trade_date=',latest_hist_trade_date,type(latest_hist_trade_date))
         update_today=True
         if update_today:
