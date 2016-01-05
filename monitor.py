@@ -20,7 +20,7 @@ def monitor_test():
     turn_over_list=[]
     great_drop_down=-3.1
     latest_trade_date=get_latest_trade_day()
-    print('latest_trade_date=',latest_trade_date,type(latest_trade_date))
+    #print('latest_trade_date=',latest_trade_date,type(latest_trade_date))
     for code in today_df_h_open.index.values.tolist():
         #print(today_df_h_open.index.values.tolist())
         #print(today_df_h_open.ix[code])
@@ -35,11 +35,10 @@ def monitor_test():
         temp_df=hist_temp_df.tail(1)
         latest_hist_trade_date=temp_df.iloc[0].date
         latest_hist_trade_date=latest_hist_trade_date.replace('/','-')
-        print('latest_hist_trade_date=',latest_hist_trade_date,type(latest_hist_trade_date))
+        #print('latest_hist_trade_date=',latest_hist_trade_date,type(latest_hist_trade_date))
         update_today=True
         if latest_hist_trade_date==latest_trade_date:
             temp_df=hist_temp_df.tail(2).head(1)
-            print('tail2')
         #else:
         #    temp_df=temp_df.tail(1)
         if temp_df.empty:
