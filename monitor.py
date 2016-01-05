@@ -15,6 +15,7 @@ def monitor_test():
     print(today_df_h_open)
     print(len(today_df_h_open))
     print('+++++++++++++++++++++++++++++++++++++++++++')
+    great_open_list=[]
     gap_code_list=[]
     turn_over_list=[]
     great_drop_down=-3.1
@@ -48,6 +49,12 @@ def monitor_test():
             #if min(this_open,this_trade)>max(last_open,last_close):
                 print(code,this_open,this_trade,last_close,last_close)
                 gap_code_list.append(code)
+                
+            if min(this_open,this_trade)>max(last_close,last_open)*(1+0.01*high_open_rate) and (this_high!=this_low):
+            #if min(this_open,this_trade)>max(last_open,last_close):
+                print(code,this_open,this_trade,last_close,last_close)
+                great_open_list.append(code)
+            
             if last_p_change<great_drop_down and this_p_change>=abs(last_p_change)*0.8:
                 turn_over_list.append(code)
             
@@ -55,6 +62,8 @@ def monitor_test():
     print(len(gap_code_list))
     print('turn_over_list=',turn_over_list)
     print(len(turn_over_list))
+    print('great_open_list=',great_open_list)
+    print(len(great_open_list))
     
     great_change=4.0
     today_df_gt_3=today_df[today_df.changepercent>great_change]
