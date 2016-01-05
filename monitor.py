@@ -37,10 +37,10 @@ def monitor_test():
         latest_hist_trade_date=latest_hist_trade_date.replace('/','-')
         print('latest_hist_trade_date=',latest_hist_trade_date,type(latest_hist_trade_date))
         update_today=True
-        if update_today:
+        if latest_hist_trade_date==latest_trade_date:
             temp_df=temp_df.tail(2).head(1)
-        else:
-            temp_df=temp_df.tail(1)
+        #else:
+        #    temp_df=temp_df.tail(1)
         if temp_df.empty:
             pass
         else:
