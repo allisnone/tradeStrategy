@@ -31,14 +31,14 @@ def monitor_test():
         this_p_change=today_df_h_open.ix[code].changepercent
         
         stock_hist_obj=Stockhistory(code,'D')
-        temp_df=stock_hist_obj._form_temp_df()
-        temp_df=temp_df.tail(1)
+        hist_temp_df=stock_hist_obj._form_temp_df()
+        temp_df=hist_temp_df.tail(1)
         latest_hist_trade_date=temp_df.iloc[0].date
         latest_hist_trade_date=latest_hist_trade_date.replace('/','-')
         print('latest_hist_trade_date=',latest_hist_trade_date,type(latest_hist_trade_date))
         update_today=True
         if latest_hist_trade_date==latest_trade_date:
-            temp_df=temp_df.tail(2).head(1)
+            temp_df=hist_temp_df.tail(2).head(1)
             print('tail2')
         #else:
         #    temp_df=temp_df.tail(1)
