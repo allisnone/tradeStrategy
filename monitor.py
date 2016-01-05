@@ -19,6 +19,8 @@ def monitor_test():
     gap_code_list=[]
     turn_over_list=[]
     great_drop_down=-3.1
+    latest_trade_date=get_latest_trade_day()
+    print('latest_trade_date=',latest_trade_date,type(latest_trade_date))
     for code in today_df_h_open.index.values.tolist():
         #print(today_df_h_open.index.values.tolist())
         #print(today_df_h_open.ix[code])
@@ -31,7 +33,8 @@ def monitor_test():
         stock_hist_obj=Stockhistory(code,'D')
         temp_df=stock_hist_obj._form_temp_df()
         temp_df=temp_df.tail(1)
-        print(temp_df.iloc[0].date)
+        latest_hist_trade_date=temp_df.iloc[0].date
+        print('latest_hist_trade_date=',latest_hist_trade_date,type(latest_hist_trade_date))
         update_today=True
         if update_today:
             temp_df=temp_df.tail(2).head(1)
