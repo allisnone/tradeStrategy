@@ -39,6 +39,7 @@ def monitor_test():
         update_today=True
         if latest_hist_trade_date==latest_trade_date:
             temp_df=temp_df.tail(2).head(1)
+            print('tail2')
         #else:
         #    temp_df=temp_df.tail(1)
         if temp_df.empty:
