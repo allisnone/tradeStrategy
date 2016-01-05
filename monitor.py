@@ -35,19 +35,21 @@ def monitor_test():
             temp_df=temp_df.tail(2).head(1)
         else:
             temp_df=temp_df.tail(1)
-        temp_df=temp_df.tail(2).head(1)
-        last_open=temp_df.iloc[0].open
-        last_close=temp_df.iloc[0].close
-        last_high=temp_df.iloc[0].high
-        last_low=temp_df.iloc[0].low
-        last_p_change=temp_df.iloc[0].p_change
-        
-        if min(this_open,this_trade)>last_high*(1+0.01*high_open_rate) and (this_high!=this_low):
-        #if min(this_open,this_trade)>max(last_open,last_close):
-            print(code,this_open,this_trade,last_close,last_close)
-            gap_code_list.append(code)
-        if last_p_change<great_drop_down and this_p_change>=abs(last_p_change)*0.8:
-            turn_over_list.append(code)
+        if temp_df.empty:
+            pass
+        else:
+            last_open=temp_df.iloc[0].open
+            last_close=temp_df.iloc[0].close
+            last_high=temp_df.iloc[0].high
+            last_low=temp_df.iloc[0].low
+            last_p_change=temp_df.iloc[0].p_change
+            
+            if min(this_open,this_trade)>last_high*(1+0.01*high_open_rate) and (this_high!=this_low):
+            #if min(this_open,this_trade)>max(last_open,last_close):
+                print(code,this_open,this_trade,last_close,last_close)
+                gap_code_list.append(code)
+            if last_p_change<great_drop_down and this_p_change>=abs(last_p_change)*0.8:
+                turn_over_list.append(code)
             
     print('gap_code_list=',gap_code_list)
     print(len(gap_code_list))
