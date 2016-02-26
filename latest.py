@@ -1,4 +1,4 @@
-
+# -*- coding:utf-8 -*-
 import urllib.request, urllib.parse, urllib.error
 import string
 import datetime
@@ -100,7 +100,7 @@ s_sz000667,\
 s_sz000100,\
 s_sz002146'
 """
-proxy={'http':'http://jpyoip01.mgmt.ericsson.se:8080'}
+proxy_dict={'http':'http://jpyoip01.mgmt.ericsson.se:8080'}
 expect_increase_rate=2.5
 sell_decrease_rate=-3
 
@@ -114,8 +114,20 @@ def name_in_mystock(name):
 
 #url='http://stock.qq.com/i/'
 
-def get_real_time_price(url,mystock_list,proxies):
-    data = urllib.request.urlopen(url,proxies=proxy).read()
+def get_real_time_price(url,mystock_list,proxy_dict):
+    #data = urllib.request.urlopen(url,proxies=proxy_dict).read() line = data.split('\n')
+    #line = data.split('\n') line = data.split('\n')
+    """Python3"""
+    proxy=urllib.request.ProxyHandler(proxy_dict)
+    opener=urllib.request.build_opener(proxy)
+    urllib.request.install_opener(opener)
+    fp = urllib.request.urlopen(url)
+    bytes_data=fp.read()
+    #data=bytes_data.decode('utf8')
+    data=bytes_data.decode('gb2312')
+    #data=urllib.request.urlretrieve(url)
+    #print(data)
+    #print(type(data))
     #print data
     line = data.split('\n')
 
@@ -166,12 +178,22 @@ def get_real_time_price(url,mystock_list,proxies):
 def get_price_info(aa):
     #print aa[0].split('_')[3]
     #code  = aa[0].split('_')[3].split('=')[0]
-    #print aa
+    #print(aa)
     code = aa[0].split('_')[3].replace('"','').replace('=',' ')
+    #print(float(aa[1]))
+    """
+    cur=string.atof(aa[1])
     cur   = string.atof(aa[1])
     wave  = string.atof(aa[2])
     per   = string.atof(aa[3])
     money = string.atof(aa[5].replace('";',''))
+    """
+    #python3
+    cur   = float(aa[1])
+    wave  = float(aa[2])
+    per   = float(aa[3])
+    money = int(aa[5].replace('";',''))
+    
     index = name_in_mystock (code)
     price_list=[]
     if index :
@@ -215,7 +237,7 @@ def refresh():
         #while is_valid_trade_time(now) :
         while True:
             print('refresh')
-            get_real_time_price(url,mystock_list,proxy)
+            get_real_time_price(url,mystock_list,proxy_dict)
             time.sleep(60)
             now=datetime.datetime.now()
 

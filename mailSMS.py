@@ -6,7 +6,7 @@ Define the functions for sending SMS and Email when alarm/alert is activated/rec
 
 import smtplib
 from email.mime.text import MIMEText
-import MySQLdb
+#import MySQLdb
 
 """
 
